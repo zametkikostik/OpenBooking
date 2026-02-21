@@ -31,6 +31,21 @@ export default function HomePage() {
                 </Link>
               </Button>
             </div>
+            
+            {/* Quick Admin Login */}
+            <div className="mt-4 p-4 bg-muted/50 rounded-lg border">
+              <p className="text-sm font-medium mb-2">⚡ Быстрый вход (Тест)</p>
+              <form action="/api/auth/quick-login" method="POST" className="flex gap-2">
+                <input type="hidden" name="email" value="admin@openbooking.com" />
+                <input type="hidden" name="password" value="Admin123!" />
+                <Button type="submit" size="sm" variant="ghost" className="text-xs">
+                  👤 Войти как Admin
+                </Button>
+              </form>
+              <p className="text-xs text-muted-foreground mt-1">
+                admin@openbooking.com / Admin123!
+              </p>
+            </div>
           </div>
 
           {/* Search Box */}
