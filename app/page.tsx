@@ -1,7 +1,6 @@
 import { RealTimeMetrics } from '@/components/shared/RealTimeMetrics';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import Link from 'next/link';
 
 export default function HomePage() {
   return (
@@ -16,20 +15,6 @@ export default function HomePage() {
             Децентрализованная платформа для аренды недвижимости с защитой средств через Escrow
           </p>
 
-          {/* Auth Buttons - Prominent */}
-          <div className="mt-6 flex justify-center gap-4">
-            <Button size="lg" asChild className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
-              <Link href="/auth/login">
-                🔐 Вход
-              </Link>
-            </Button>
-            <Button size="lg" asChild variant="outline" className="border-2">
-              <Link href="/auth/signup">
-                📝 Регистрация
-              </Link>
-            </Button>
-          </div>
-
           {/* Search Box */}
           <div className="mx-auto mt-8 max-w-3xl rounded-lg bg-card p-4 shadow-lg">
             <div className="flex flex-col gap-4 md:flex-row">
@@ -43,8 +28,8 @@ export default function HomePage() {
 
           {/* CTA Buttons */}
           <div className="mt-8 flex justify-center gap-4">
-            <Button size="lg" variant="default">
-              Начать путешествие
+            <Button size="lg" asChild>
+              <a href="/properties">Начать путешествие</a>
             </Button>
             <Button size="lg" variant="outline">
               Стать хостом
