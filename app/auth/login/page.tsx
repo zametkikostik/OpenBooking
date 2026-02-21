@@ -1,18 +1,104 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
 
+const translations = {
+  ru: {
+    title: 'Вход',
+    desc: 'Введите свои данные для входа в аккаунт',
+    email: 'Email',
+    emailPlaceholder: 'admin@openbooking.com',
+    password: 'Пароль',
+    passwordPlaceholder: '••••••••',
+    forgot: 'Забыли пароль?',
+    login: 'Войти',
+    loggingIn: 'Вход...',
+    or: 'Или',
+    noAccount: 'Нет аккаунта?',
+    signup: 'Зарегистрироваться',
+    demo: 'Тестовые аккаунты:',
+    admin: 'Admin:',
+    host: 'Host:',
+    client: 'Client:',
+  },
+  en: {
+    title: 'Login',
+    desc: 'Enter your credentials to access your account',
+    email: 'Email',
+    emailPlaceholder: 'admin@openbooking.com',
+    password: 'Password',
+    passwordPlaceholder: '••••••••',
+    forgot: 'Forgot password?',
+    login: 'Login',
+    loggingIn: 'Logging in...',
+    or: 'Or',
+    noAccount: "No account?",
+    signup: 'Sign up',
+    demo: 'Demo accounts:',
+    admin: 'Admin:',
+    host: 'Host:',
+    client: 'Client:',
+  },
+  bg: {
+    title: 'Вход',
+    desc: 'Въведете данните си за достъп',
+    email: 'Email',
+    emailPlaceholder: 'admin@openbooking.com',
+    password: 'Парола',
+    passwordPlaceholder: '••••••••',
+    forgot: 'Забравена парола?',
+    login: 'Вход',
+    loggingIn: 'Влизане...',
+    or: 'Или',
+    noAccount: 'Нямате акаунт?',
+    signup: 'Регистрация',
+    demo: 'Демо акаунти:',
+    admin: 'Admin:',
+    host: 'Host:',
+    client: 'Client:',
+  },
+  ua: {
+    title: 'Вхід',
+    desc: 'Введіть свої дані для входу',
+    email: 'Email',
+    emailPlaceholder: 'admin@openbooking.com',
+    password: 'Пароль',
+    passwordPlaceholder: '••••••••',
+    forgot: 'Забули пароль?',
+    login: 'Увійти',
+    loggingIn: 'Вхід...',
+    or: 'Або',
+    noAccount: 'Немає акаунту?',
+    signup: 'Зареєструватися',
+    demo: 'Тестові акаунти:',
+    admin: 'Admin:',
+    host: 'Host:',
+    client: 'Client:',
+  },
+};
+
 export default function LoginPage() {
   const router = useRouter();
+  const [currentLang, setCurrentLang] = useState('ru');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    const savedLang = document.cookie
+      .split('; ')
+      .find(row => row.startsWith('NEXT_LOCALE='))
+      ?.split('=')[1] || 'ru';
+    setCurrentLang(savedLang);
+  }, []);
+
+  const t = translations[currentLang] || translations.ru;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -20,7 +106,6 @@ export default function LoginPage() {
     setError('');
 
     try {
-      // Mock login - in production, use Supabase Auth
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -29,16 +114,15 @@ export default function LoginPage() {
 
       if (response.ok) {
         const data = await response.json();
-        // Redirect based on role
         if (data.role === 'admin') router.push('/dashboard/admin');
         else if (data.role === 'host') router.push('/dashboard/host');
         else router.push('/dashboard/client');
       } else {
         const err = await response.json();
-        setError(err.message || 'Ошибка входа');
+        setError(err.message || 'Login failed');
       }
-    } catch (err) {
-      setError('Ошибка подключения к серверу');
+    } catch {
+      setError('Connection error');
     } finally {
       setLoading(false);
     }
@@ -48,10 +132,8 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background to-muted px-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold">Вход</CardTitle>
-          <CardDescription>
-            Введите свои данные для входа в аккаунт
-          </CardDescription>
+          <CardTitle className="text-2xl font-bold">{t.title}</CardTitle>
+          <CardDescription>{t.desc}</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -63,12 +145,12 @@ export default function LoginPage() {
 
             <div className="space-y-2">
               <label className="text-sm font-medium" htmlFor="email">
-                Email
+                {t.email}
               </label>
               <Input
                 id="email"
                 type="email"
-                placeholder="admin@openbooking.com"
+                placeholder={t.emailPlaceholder}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -77,12 +159,12 @@ export default function LoginPage() {
 
             <div className="space-y-2">
               <label className="text-sm font-medium" htmlFor="password">
-                Пароль
+                {t.password}
               </label>
               <Input
                 id="password"
                 type="password"
-                placeholder="••••••••"
+                placeholder={t.passwordPlaceholder}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -90,16 +172,13 @@ export default function LoginPage() {
             </div>
 
             <div className="flex items-center justify-between">
-              <Link
-                href="/auth/forgot-password"
-                className="text-sm text-primary hover:underline"
-              >
-                Забыли пароль?
+              <Link href="/auth/forgot-password" className="text-sm text-primary hover:underline">
+                {t.forgot}
               </Link>
             </div>
 
             <Button type="submit" className="w-full" loading={loading}>
-              {loading ? 'Вход...' : 'Войти'}
+              {loading ? t.loggingIn : t.login}
             </Button>
 
             <div className="relative my-4">
@@ -107,47 +186,23 @@ export default function LoginPage() {
                 <div className="w-full border-t" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-2 text-muted-foreground">
-                  Или
-                </span>
+                <span className="bg-card px-2 text-muted-foreground">{t.or}</span>
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-2">
-              <Button type="button" variant="outline" className="w-full">
-                <svg className="w-4 h-4" viewBox="0 0 24 24">
-                  <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                  <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                  <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                  <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                </svg>
-              </Button>
-              <Button type="button" variant="outline" className="w-full">
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                </svg>
-              </Button>
-              <Button type="button" variant="outline" className="w-full">
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-                </svg>
-              </Button>
-            </div>
-
             <p className="text-center text-sm text-muted-foreground">
-              Нет аккаунта?{' '}
+              {t.noAccount}{' '}
               <Link href="/auth/signup" className="text-primary hover:underline">
-                Зарегистрироваться
+                {t.signup}
               </Link>
             </p>
 
-            {/* Demo credentials */}
             <div className="mt-6 p-4 bg-muted rounded-lg">
-              <p className="text-sm font-medium mb-2">Тестовые аккаунты:</p>
+              <p className="text-sm font-medium mb-2">{t.demo}</p>
               <div className="space-y-1 text-xs text-muted-foreground">
-                <p><strong>Admin:</strong> admin@openbooking.com / Admin123!</p>
-                <p><strong>Host:</strong> host@openbooking.com / Host123!</p>
-                <p><strong>Client:</strong> client@openbooking.com / Client123!</p>
+                <p><strong>{t.admin}</strong> admin@openbooking.com / Admin123!</p>
+                <p><strong>{t.host}</strong> host@openbooking.com / Host123!</p>
+                <p><strong>{t.client}</strong> client@openbooking.com / Client123!</p>
               </div>
             </div>
           </form>
