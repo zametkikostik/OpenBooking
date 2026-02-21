@@ -1,7 +1,10 @@
--- OpenBooking AGI Platform: Initial Schema
+-- ============================================
+-- OPENBOOKING INITIAL SCHEMA
+-- ============================================
 -- Trust Economy Protocol + Web3 Finance Infrastructure
+-- ============================================
 
--- Enable extensions
+-- Enable required extensions
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
@@ -9,31 +12,178 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 -- ENUMS
 -- ============================================
 
-CREATE TYPE user_role AS ENUM ('client', 'host', 'admin');
-CREATE TYPE booking_status AS ENUM ('pending', 'payment_locked', 'checked_in', 'completed', 'settled', 'cancelled');
-CREATE TYPE payment_method AS ENUM ('usdt', 'usdc', 'eth', 'openbooking_token', 'a7a5_stablecoin', 'sbp', 'sepa', 'mir', 'yookassa', 'klarna', 'epay_bg', 'borica', 'adyen');
-CREATE TYPE payment_status AS ENUM ('pending', 'completed', 'failed', 'refunded');
-CREATE TYPE currency AS ENUM ('USD', 'EUR', 'RUB', 'BGN', 'GBP', 'ETH', 'USDT', 'USDC', 'A7A5', 'OPENBOOKING');
+-- User roles (RBAC)
+CREATE TYPE user_role AS ENUM (
+    'client',
+    'host',
+    'admin',
+    'moderator',
+    'super_admin'
+);
+
+-- Booking state machine (ESCROW PROTOCOL)
+CREATE TYPE booking_status AS ENUM (
+    'pending',           -- Initial state
+    'payment_locked',    -- Payment secured in escrow
+    'confirmed',         -- Host confirmed
+    'checked_in',        -- Guest checked in (no cancel allowed)
+    'completed',         -- Stay completed
+    'settled',           -- Funds settled to host
+    'cancelled',         -- Cancelled before check-in
+    'disputed',          -- In dispute resolution
+    'refunded'           -- Refunded to guest
+);
+
+-- Payment methods
+CREATE TYPE payment_method AS ENUM (
+    -- Crypto
+    'usdt',
+    'usdc',
+    'eth',
+    'obt_token',        -- OpenBooking Token
+    'a7a5_stable',
+    -- Fiat Russia
+    'sbp',
+    'mir',
+    'yookassa',
+    -- Fiat EU
+    'sepa',
+    'adyen',
+    'klarna',
+    -- Fiat Bulgaria
+    'borica',
+    'epay_bg',
+    -- Cards
+    'visa',
+    'mastercard'
+);
+
+-- Payment status
+CREATE TYPE payment_status AS ENUM (
+    'pending',
+    'processing',
+    'completed',
+    'failed',
+    'refunded',
+    'chargeback'
+);
+
+-- Property types
+CREATE TYPE property_type AS ENUM (
+    'apartment',
+    'house',
+    'hotel',
+    'hostel',
+    'resort',
+    'villa',
+    'cabin',
+    'unique'
+);
+
+-- AI Content types
+CREATE TYPE ai_content_type AS ENUM (
+    'seo_page',
+    'travel_guide',
+    'ad_campaign',
+    'property_description',
+    'email_template',
+    'social_post'
+);
+
+-- Legal document types
+CREATE TYPE legal_doc_type AS ENUM (
+    'terms_of_service',
+    'privacy_policy',
+    'host_agreement',
+    'guest_agreement',
+    'offer_contract',
+    'cancellation_policy',
+    'data_processing_agreement'
+);
+
+-- Notification types
+CREATE TYPE notification_type AS ENUM (
+    'booking_update',
+    'payment_received',
+    'payment_sent',
+    'review_request',
+    'system_alert',
+    'marketing',
+    'security_alert'
+);
 
 -- ============================================
 -- CORE TABLES
 -- ============================================
 
--- Users / Profiles
+-- User profiles (extends auth.users)
 CREATE TABLE profiles (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    email TEXT UNIQUE NOT NULL,
-    full_name TEXT,
-    avatar_url TEXT,
-    role user_role DEFAULT 'client',
+    id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    email TEXT NOT NULL UNIQUE,
+    role user_role NOT NULL DEFAULT 'client',
+    
+    -- Personal info
+    first_name TEXT,
+    last_name TEXT,
     phone TEXT,
-    country TEXT,
-    language TEXT DEFAULT 'en',
-    kyc_verified BOOLEAN DEFAULT FALSE,
-    kyc_data JSONB,
+    avatar_url TEXT,
+    
+    -- Verification
+    email_verified BOOLEAN DEFAULT FALSE,
+    phone_verified BOOLEAN DEFAULT FALSE,
+    identity_verified BOOLEAN DEFAULT FALSE,
+    kyc_status TEXT DEFAULT 'pending', -- pending, approved, rejected
+    
+    -- Web3
+    wallet_address TEXT UNIQUE,
+    wallet_connected_at TIMESTAMPTZ,
+    
+    -- Reputation
     reputation_score DECIMAL(5,2) DEFAULT 0.00,
     total_bookings INTEGER DEFAULT 0,
-    total_revenue DECIMAL(15,2) DEFAULT 0.00,
+    total_reviews INTEGER DEFAULT 0,
+    
+    -- Preferences
+    preferred_language TEXT DEFAULT 'en',
+    preferred_currency TEXT DEFAULT 'USD',
+    timezone TEXT DEFAULT 'UTC',
+    
+    -- Timestamps
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    last_login_at TIMESTAMPTZ,
+    
+    -- Metadata
+    metadata JSONB DEFAULT '{}'::jsonb
+);
+
+-- Host profiles (additional host-specific data)
+CREATE TABLE host_profiles (
+    id UUID PRIMARY KEY REFERENCES profiles(id) ON DELETE CASCADE,
+    
+    -- Business info
+    business_name TEXT,
+    business_type TEXT, -- individual, company, property_manager
+    tax_id TEXT,
+    registration_number TEXT,
+    
+    -- Banking
+    bank_account_encrypted TEXT, -- Encrypted bank details
+    payout_method TEXT,
+    
+    -- Stats
+    total_properties INTEGER DEFAULT 0,
+    total_bookings INTEGER DEFAULT 0,
+    acceptance_rate DECIMAL(5,2) DEFAULT 0.00,
+    response_rate DECIMAL(5,2) DEFAULT 0.00,
+    response_time_minutes INTEGER DEFAULT 0,
+    
+    -- Verification
+    verified BOOLEAN DEFAULT FALSE,
+    verified_at TIMESTAMPTZ,
+    verification_documents JSONB DEFAULT '[]'::jsonb,
+    
+    -- Timestamps
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -41,117 +191,284 @@ CREATE TABLE profiles (
 -- Properties
 CREATE TABLE properties (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    host_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
-    title JSONB NOT NULL, -- Multilingual: {"en": "...", "ru": "..."}
-    description JSONB NOT NULL,
-    address JSONB NOT NULL, -- {street, city, country, postal_code, coordinates}
-    property_type TEXT NOT NULL, -- apartment, house, villa, hotel, etc.
-    room_type TEXT NOT NULL, -- entire_place, private_room, shared_room
-    max_guests INTEGER NOT NULL,
+    host_id UUID NOT NULL REFERENCES host_profiles(id) ON DELETE CASCADE,
+    
+    -- Basic info
+    title TEXT NOT NULL,
+    description TEXT,
+    property_type property_type NOT NULL,
+    
+    -- Location
+    country TEXT NOT NULL,
+    city TEXT NOT NULL,
+    district TEXT,
+    address TEXT,
+    postal_code TEXT,
+    latitude DECIMAL(10,8),
+    longitude DECIMAL(11,8),
+    
+    -- Capacity
+    guests INTEGER NOT NULL DEFAULT 1,
     bedrooms INTEGER DEFAULT 0,
     beds INTEGER DEFAULT 0,
     bathrooms INTEGER DEFAULT 0,
-    amenities TEXT[] DEFAULT '{}',
-    photos TEXT[] DEFAULT '{}',
-    price_per_night DECIMAL(10,2) NOT NULL,
-    currency currency DEFAULT 'USD',
+    
+    -- Amenities (JSON array)
+    amenities JSONB DEFAULT '[]'::jsonb,
+    
+    -- Pricing
+    base_price DECIMAL(12,2) NOT NULL,
+    currency TEXT DEFAULT 'USD',
+    cleaning_fee DECIMAL(10,2) DEFAULT 0,
+    service_fee DECIMAL(10,2) DEFAULT 0,
+    security_deposit DECIMAL(10,2) DEFAULT 0,
+    
+    -- Availability
     min_nights INTEGER DEFAULT 1,
     max_nights INTEGER DEFAULT 365,
-    instant_book BOOLEAN DEFAULT FALSE,
-    status TEXT DEFAULT 'active', -- active, inactive, suspended
-    rating DECIMAL(3,2) DEFAULT 0.00,
+    available_from DATE,
+    available_to DATE,
+    
+    -- Status
+    status TEXT DEFAULT 'draft', -- draft, active, suspended, deleted
+    verified BOOLEAN DEFAULT FALSE,
+    
+    -- SEO
+    slug TEXT UNIQUE,
+    meta_title TEXT,
+    meta_description TEXT,
+    
+    -- Stats
+    view_count INTEGER DEFAULT 0,
+    booking_count INTEGER DEFAULT 0,
     review_count INTEGER DEFAULT 0,
-    seo_slug TEXT UNIQUE,
+    rating_avg DECIMAL(3,2) DEFAULT 0.00,
+    
+    -- Timestamps
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Bookings (Escrow State Machine)
+-- Property photos
+CREATE TABLE property_photos (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    property_id UUID NOT NULL REFERENCES properties(id) ON DELETE CASCADE,
+    url TEXT NOT NULL,
+    thumbnail_url TEXT,
+    caption TEXT,
+    sort_order INTEGER DEFAULT 0,
+    is_primary BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ============================================
+-- BOOKING & ESCROW SYSTEM
+-- ============================================
+
+-- Bookings (ESCROW STATE MACHINE)
 CREATE TABLE bookings (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    property_id UUID REFERENCES properties(id) ON DELETE CASCADE,
-    guest_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
-    host_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
+    property_id UUID NOT NULL REFERENCES properties(id),
+    guest_id UUID NOT NULL REFERENCES profiles(id),
+    host_id UUID NOT NULL REFERENCES host_profiles(id),
+    
+    -- Dates
     check_in_date DATE NOT NULL,
     check_out_date DATE NOT NULL,
-    guests INTEGER NOT NULL,
+    nights INTEGER NOT NULL,
+    
+    -- Guests
+    number_of_guests INTEGER NOT NULL,
+    
+    -- Pricing breakdown
     subtotal DECIMAL(12,2) NOT NULL,
-    service_fee DECIMAL(12,2) DEFAULT 0.00,
-    cleaning_fee DECIMAL(12,2) DEFAULT 0.00,
+    cleaning_fee DECIMAL(10,2) DEFAULT 0,
+    service_fee DECIMAL(10,2) DEFAULT 0,
+    taxes DECIMAL(10,2) DEFAULT 0,
     total_amount DECIMAL(12,2) NOT NULL,
-    currency currency DEFAULT 'USD',
-    status booking_status DEFAULT 'pending',
+    currency TEXT DEFAULT 'USD',
+    
+    -- ESCROW STATE
+    status booking_status NOT NULL DEFAULT 'pending',
+    
+    -- Payment
     payment_method payment_method,
     payment_status payment_status DEFAULT 'pending',
-    cancellation_policy TEXT,
-    special_requests TEXT,
-    escrow_wallet_address TEXT,
-    smart_contract_tx_hash TEXT,
-    checked_in_at TIMESTAMPTZ,
-    checked_out_at TIMESTAMPTZ,
-    settled_at TIMESTAMPTZ,
-    cancelled_at TIMESTAMPTZ,
-    cancel_reason TEXT,
-    metadata JSONB DEFAULT '{}',
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW(),
-    CONSTRAINT valid_dates CHECK (check_out_date > check_in_date)
-);
-
--- ============================================
--- PAYMENT & ESCROW SYSTEM
--- ============================================
-
--- Payment Transactions
-CREATE TABLE payment_transactions (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    booking_id UUID REFERENCES bookings(id) ON DELETE CASCADE,
-    user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
-    amount DECIMAL(15,2) NOT NULL,
-    currency currency NOT NULL,
-    method payment_method NOT NULL,
-    status payment_status DEFAULT 'pending',
-    direction TEXT NOT NULL, -- inbound, outbound
+    payment_id TEXT, -- External payment reference
+    
+    -- Escrow tracking
+    escrow_amount DECIMAL(12,2),
+    escrow_released_at TIMESTAMPTZ,
+    escrow_released_amount DECIMAL(12,2),
+    
+    -- Web3
     blockchain_tx_hash TEXT,
     blockchain_network TEXT,
-    wallet_address TEXT,
-    fiat_reference TEXT, -- Bank reference for fiat payments
-    processor_response JSONB,
-    escrow_release_at TIMESTAMPTZ,
+    smart_contract_event_id TEXT,
+    
+    -- Cancellation
+    cancelled_by UUID REFERENCES profiles(id),
+    cancelled_at TIMESTAMPTZ,
+    cancellation_reason TEXT,
+    
+    -- Review
+    guest_review_id UUID,
+    host_review_id UUID,
+    
+    -- Timestamps
     created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    confirmed_at TIMESTAMPTZ,
+    checked_in_at TIMESTAMPTZ,
+    completed_at TIMESTAMPTZ,
+    
+    -- Metadata
+    metadata JSONB DEFAULT '{}'::jsonb,
+    
+    CONSTRAINT check_dates CHECK (check_out_date > check_in_date)
 );
 
--- Safe Vault (DeFi Integration)
+-- Booking state history (audit trail)
+CREATE TABLE booking_state_history (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    booking_id UUID NOT NULL REFERENCES bookings(id) ON DELETE CASCADE,
+    from_status booking_status,
+    to_status booking_status NOT NULL,
+    triggered_by UUID REFERENCES profiles(id),
+    triggered_by_role TEXT,
+    reason TEXT,
+    metadata JSONB DEFAULT '{}'::jsonb,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ============================================
+-- PAYMENT & FINANCIAL SYSTEM
+-- ============================================
+
+-- Payments
+CREATE TABLE payments (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    booking_id UUID REFERENCES bookings(id),
+    user_id UUID NOT NULL REFERENCES profiles(id),
+    
+    -- Amount
+    amount DECIMAL(12,2) NOT NULL,
+    currency TEXT NOT NULL,
+    fee_amount DECIMAL(10,2) DEFAULT 0,
+    net_amount DECIMAL(10,2) DEFAULT 0,
+    
+    -- Method
+    method payment_method NOT NULL,
+    status payment_status NOT NULL DEFAULT 'pending',
+    
+    -- Gateway reference
+    gateway_reference TEXT,
+    gateway_response JSONB,
+    
+    -- Web3
+    blockchain_tx_hash TEXT,
+    blockchain_confirmations INTEGER DEFAULT 0,
+    token_contract TEXT,
+    
+    -- Timestamps
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    processed_at TIMESTAMPTZ,
+    failed_at TIMESTAMPTZ,
+    
+    -- Error handling
+    error_code TEXT,
+    error_message TEXT,
+    
+    -- Metadata
+    metadata JSONB DEFAULT '{}'::jsonb
+);
+
+-- Payouts (to hosts)
+CREATE TABLE payouts (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    host_id UUID NOT NULL REFERENCES host_profiles(id),
+    booking_id UUID REFERENCES bookings(id),
+    
+    -- Amount
+    amount DECIMAL(12,2) NOT NULL,
+    currency TEXT NOT NULL,
+    fee_amount DECIMAL(10,2) DEFAULT 0,
+    net_amount DECIMAL(10,2) NOT NULL,
+    
+    -- Status
+    status TEXT DEFAULT 'pending', -- pending, processing, completed, failed
+    payout_method TEXT,
+    
+    -- Gateway
+    gateway_reference TEXT,
+    
+    -- Timestamps
+    requested_at TIMESTAMPTZ DEFAULT NOW(),
+    processed_at TIMESTAMPTZ,
+    completed_at TIMESTAMPTZ,
+    failed_at TIMESTAMPTZ,
+    
+    -- Error
+    error_message TEXT,
+    
+    -- Metadata
+    metadata JSONB DEFAULT '{}'::jsonb
+);
+
+-- Safe Vault (DeFi positions)
 CREATE TABLE safe_vaults (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES profiles(id),
+    
+    -- Vault info
     vault_name TEXT NOT NULL,
-    protocol TEXT NOT NULL, -- aave, compound, etc.
-    deposited_amount DECIMAL(18,8) DEFAULT 0.00000000,
-    deposited_currency currency NOT NULL,
-    current_value_usd DECIMAL(15,2) DEFAULT 0.00,
-    apy DECIMAL(5,2) DEFAULT 0.00,
-    yield_earned DECIMAL(18,8) DEFAULT 0.00000000,
+    vault_type TEXT DEFAULT 'savings', -- savings, investment, staking
+    
+    -- Balance
+    deposited_amount DECIMAL(18,8) DEFAULT 0,
+    current_value DECIMAL(18,8) DEFAULT 0,
+    yield_earned DECIMAL(18,8) DEFAULT 0,
+    currency TEXT NOT NULL,
+    
+    -- DeFi Protocol
+    protocol TEXT, -- aave, compound, etc.
+    protocol_position_id TEXT,
+    
+    -- Yield
+    apy DECIMAL(6,4) DEFAULT 0,
+    last_yield_update TIMESTAMPTZ,
+    
+    -- Risk
     risk_score TEXT DEFAULT 'low', -- low, medium, high
-    lock_period_days INTEGER DEFAULT 0,
-    unlocked_at TIMESTAMPTZ,
-    status TEXT DEFAULT 'active', -- active, locked, withdrawn
-    contract_address TEXT,
-    metadata JSONB DEFAULT '{}',
+    
+    -- Status
+    status TEXT DEFAULT 'active',
+    
+    -- Timestamps
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Vault Transactions
+-- Vault transactions
 CREATE TABLE vault_transactions (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    vault_id UUID REFERENCES safe_vaults(id) ON DELETE CASCADE,
-    type TEXT NOT NULL, -- deposit, withdraw, yield
+    vault_id UUID NOT NULL REFERENCES safe_vaults(id) ON DELETE CASCADE,
+    
+    -- Type
+    transaction_type TEXT NOT NULL, -- deposit, withdraw, yield
+    
+    -- Amount
     amount DECIMAL(18,8) NOT NULL,
-    currency currency NOT NULL,
-    tx_hash TEXT,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+    currency TEXT NOT NULL,
+    
+    -- Blockchain
+    blockchain_tx_hash TEXT,
+    
+    -- Timestamps
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    
+    -- Metadata
+    metadata JSONB DEFAULT '{}'::jsonb
 );
 
 -- ============================================
@@ -161,325 +478,345 @@ CREATE TABLE vault_transactions (
 -- Reviews
 CREATE TABLE reviews (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    booking_id UUID REFERENCES bookings(id) ON DELETE CASCADE,
-    property_id UUID REFERENCES properties(id) ON DELETE CASCADE,
-    guest_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
-    host_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
+    booking_id UUID NOT NULL REFERENCES bookings(id),
+    property_id UUID NOT NULL REFERENCES properties(id),
+    
+    -- Reviewer
+    reviewer_id UUID NOT NULL REFERENCES profiles(id),
+    reviewee_id UUID NOT NULL REFERENCES profiles(id),
+    
+    -- Type
+    review_type TEXT NOT NULL, -- guest_to_host, host_to_guest
+    
+    -- Content
     rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
-    cleanliness_rating INTEGER CHECK (cleanliness_rating >= 1 AND cleanliness_rating <= 5),
-    accuracy_rating INTEGER CHECK (accuracy_rating >= 1 AND accuracy_rating <= 5),
-    communication_rating INTEGER CHECK (communication_rating >= 1 AND communication_rating <= 5),
+    title TEXT,
+    content TEXT,
+    
+    -- Categories
+    cleanliness INTEGER CHECK (cleanliness >= 1 AND cleanliness <= 5),
+    accuracy INTEGER CHECK (accuracy >= 1 AND accuracy <= 5),
+    communication INTEGER CHECK (communication >= 1 AND communication <= 5),
     location_rating INTEGER CHECK (location_rating >= 1 AND location_rating <= 5),
-    checkin_rating INTEGER CHECK (checkin_rating >= 1 AND checkin_rating <= 5),
-    value_rating INTEGER CHECK (value_rating >= 1 AND value_rating <= 5),
-    comment TEXT,
-    host_response TEXT,
-    host_response_at TIMESTAMPTZ,
-    is_verified BOOLEAN DEFAULT TRUE,
-    helpful_count INTEGER DEFAULT 0,
-    created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- Reputation Events (Blockchain-style ledger)
-CREATE TABLE reputation_events (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
-    event_type TEXT NOT NULL, -- booking_completed, review_received, cancellation, etc.
-    points_change DECIMAL(5,2) NOT NULL,
-    previous_score DECIMAL(5,2),
-    new_score DECIMAL(5,2),
-    reference_id UUID, -- booking_id, review_id, etc.
-    metadata JSONB DEFAULT '{}',
-    created_at TIMESTAMPTZ DEFAULT NOW()
+    check_in INTEGER CHECK (check_in >= 1 AND check_in <= 5),
+    value INTEGER CHECK (value >= 1 AND value <= 5),
+    
+    -- Response
+    response TEXT,
+    response_at TIMESTAMPTZ,
+    
+    -- Visibility
+    is_public BOOLEAN DEFAULT TRUE,
+    is_verified BOOLEAN DEFAULT FALSE,
+    
+    -- Timestamps
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- ============================================
--- AI & SEO SYSTEM
+-- AI CONTENT SYSTEM
 -- ============================================
 
--- AI Generated Content
+-- AI generated content
 CREATE TABLE ai_content (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    content_type TEXT NOT NULL, -- property_description, travel_guide, seo_page, ad_copy
-    reference_id UUID, -- property_id, city_id, etc.
-    language TEXT NOT NULL,
+    
+    -- Type
+    content_type ai_content_type NOT NULL,
+    
+    -- Target
+    target_type TEXT, -- property, page, campaign
+    target_id UUID,
+    
+    -- Content
     title TEXT,
-    body TEXT,
-    metadata JSONB DEFAULT '{}', -- SEO tags, keywords, etc.
+    content TEXT NOT NULL,
+    metadata JSONB DEFAULT '{}'::jsonb,
+    
+    -- SEO
+    keywords JSONB DEFAULT '[]'::jsonb,
+    meta_title TEXT,
+    meta_description TEXT,
+    
+    -- Generation
+    model_used TEXT,
+    prompt_used TEXT,
+    generation_params JSONB,
+    
+    -- Quality
     quality_score DECIMAL(3,2),
-    is_published BOOLEAN DEFAULT FALSE,
+    human_edited BOOLEAN DEFAULT FALSE,
+    published BOOLEAN DEFAULT FALSE,
+    
+    -- Performance
+    views INTEGER DEFAULT 0,
+    conversions INTEGER DEFAULT 0,
+    
+    -- Timestamps
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- SEO Pages
+-- SEO pages
 CREATE TABLE seo_pages (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    page_type TEXT NOT NULL, -- city, district, seasonal, property_type
+    
+    -- Routing
     slug TEXT UNIQUE NOT NULL,
-    language TEXT NOT NULL,
+    path TEXT NOT NULL,
+    
+    -- Localization
+    language TEXT DEFAULT 'en',
+    locale_path TEXT,
+    
+    -- Content
     title TEXT NOT NULL,
-    meta_description TEXT,
+    description TEXT,
+    content TEXT,
     h1 TEXT,
-    content JSONB, -- Structured content blocks
-    schema_markup JSONB, -- Schema.org structured data
-    og_image TEXT,
+    
+    -- SEO
+    meta_title TEXT,
+    meta_description TEXT,
     canonical_url TEXT,
-    hreflang TEXT[],
-    traffic_data JSONB, -- UTM, source, etc.
+    keywords JSONB DEFAULT '[]'::jsonb,
+    og_image TEXT,
+    schema_markup JSONB,
+    
+    -- Targeting
+    target_city TEXT,
+    target_district TEXT,
+    target_country TEXT,
+    seasonality TEXT,
+    
+    -- Performance
+    views INTEGER DEFAULT 0,
+    organic_traffic INTEGER DEFAULT 0,
+    conversion_rate DECIMAL(5,4) DEFAULT 0,
+    
+    -- Status
+    status TEXT DEFAULT 'draft',
+    published_at TIMESTAMPTZ,
+    
+    -- Timestamps
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Analytics Events
-CREATE TABLE analytics_events (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    event_type TEXT NOT NULL,
-    user_id UUID REFERENCES profiles(id) ON DELETE SET NULL,
-    session_id TEXT,
-    page_url TEXT,
-    referrer TEXT,
-    utm_source TEXT,
-    utm_medium TEXT,
-    utm_campaign TEXT,
-    utm_content TEXT,
-    utm_term TEXT,
-    device_type TEXT,
-    browser TEXT,
-    os TEXT,
-    country TEXT,
-    city TEXT,
-    ip_hash TEXT, -- GDPR compliant
-    metadata JSONB DEFAULT '{}',
-    created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
 -- ============================================
--- LEGAL & COMPLIANCE
+-- LEGAL SYSTEM
 -- ============================================
 
--- Legal Documents
+-- Legal documents
 CREATE TABLE legal_documents (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    document_type TEXT NOT NULL, -- terms, privacy, offer, host_agreement
+    
+    -- Type
+    doc_type legal_doc_type NOT NULL,
+    
+    -- Versioning
     version TEXT NOT NULL,
-    language TEXT NOT NULL,
+    previous_version_id UUID REFERENCES legal_documents(id),
+    
+    -- Localization
+    language TEXT NOT NULL DEFAULT 'en',
+    
+    -- Content
     title TEXT NOT NULL,
     content TEXT NOT NULL,
-    is_active BOOLEAN DEFAULT FALSE,
-    effective_from DATE,
-    effective_until DATE,
-    requires_acceptance BOOLEAN DEFAULT TRUE,
-    metadata JSONB DEFAULT '{}',
+    summary TEXT,
+    
+    -- Legal
+    effective_date DATE,
+    expiry_date DATE,
+    jurisdiction TEXT,
+    
+    -- Status
+    status TEXT DEFAULT 'draft', -- draft, active, archived
+    is_required BOOLEAN DEFAULT TRUE,
+    
+    -- Acceptance tracking
+    acceptance_required_for TEXT[], -- client, host, admin
+    
+    -- Timestamps
     created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    published_at TIMESTAMPTZ,
+    
+    -- Metadata
+    metadata JSONB DEFAULT '{}'::jsonb
 );
 
--- User Document Acceptances
+-- Document acceptances
 CREATE TABLE document_acceptances (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
-    document_id UUID REFERENCES legal_documents(id) ON DELETE CASCADE,
+    document_id UUID NOT NULL REFERENCES legal_documents(id),
+    user_id UUID NOT NULL REFERENCES profiles(id),
+    
+    -- Acceptance
+    accepted BOOLEAN NOT NULL,
     accepted_at TIMESTAMPTZ DEFAULT NOW(),
     ip_address TEXT,
     user_agent TEXT,
-    UNIQUE(user_id, document_id)
+    
+    -- Version
+    document_version TEXT NOT NULL,
+    
+    -- Metadata
+    metadata JSONB DEFAULT '{}'::jsonb,
+    
+    UNIQUE(document_id, user_id, document_version)
 );
 
--- Compliance Logs (AML/KYC)
-CREATE TABLE compliance_logs (
+-- ============================================
+-- ANALYTICS & MONITORING
+-- ============================================
+
+-- Real-time metrics
+CREATE TABLE real_time_metrics (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
-    check_type TEXT NOT NULL, -- aml, kyc, sanction, pep
-    status TEXT NOT NULL, -- passed, failed, pending, manual_review
-    provider TEXT, -- Third-party provider
-    risk_score INTEGER, -- 0-100
-    details JSONB DEFAULT '{}',
-    reviewed_by UUID REFERENCES profiles(id),
-    reviewed_at TIMESTAMPTZ,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+    
+    -- Metric type
+    metric_type TEXT NOT NULL, -- active_bookings, online_users, tvl, revenue
+    
+    -- Value
+    value DECIMAL(18,8) NOT NULL,
+    currency TEXT,
+    unit TEXT,
+    
+    -- Dimensions
+    dimensions JSONB DEFAULT '{}'::jsonb,
+    
+    -- Timestamp
+    recorded_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- ============================================
--- NOTIFICATIONS
--- ============================================
+-- Traffic analytics (GDPR compliant, first-party)
+CREATE TABLE traffic_analytics (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    
+    -- Session
+    session_id TEXT,
+    user_id UUID REFERENCES profiles(id),
+    
+    -- Source
+    source TEXT, -- organic, paid, social, direct, referral
+    medium TEXT,
+    campaign TEXT,
+    
+    -- UTM
+    utm_source TEXT,
+    utm_medium TEXT,
+    utm_campaign TEXT,
+    utm_term TEXT,
+    utm_content TEXT,
+    
+    -- Page
+    page_path TEXT NOT NULL,
+    page_title TEXT,
+    referrer TEXT,
+    
+    -- Geo
+    country TEXT,
+    city TEXT,
+    language TEXT,
+    
+    -- Device
+    device_type TEXT, -- mobile, desktop, tablet
+    browser TEXT,
+    os TEXT,
+    
+    -- Engagement
+    time_on_page INTEGER,
+    scroll_depth INTEGER,
+    
+    -- Timestamp
+    pageview_at TIMESTAMPTZ DEFAULT NOW(),
+    
+    -- Cookie consent
+    consent_given BOOLEAN DEFAULT FALSE,
+    
+    -- Metadata
+    metadata JSONB DEFAULT '{}'::jsonb
+);
 
+-- Notifications
 CREATE TABLE notifications (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
-    type TEXT NOT NULL, -- booking_request, payment_received, review, etc.
+    user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+    
+    -- Type
+    notification_type notification_type NOT NULL,
+    
+    -- Content
     title TEXT NOT NULL,
     message TEXT NOT NULL,
-    data JSONB DEFAULT '{}',
+    action_url TEXT,
+    
+    -- Status
     is_read BOOLEAN DEFAULT FALSE,
     read_at TIMESTAMPTZ,
-    channel TEXT[] DEFAULT '{"in_app"}', -- in_app, email, sms, push
-    created_at TIMESTAMPTZ DEFAULT NOW()
+    
+    -- Delivery
+    email_sent BOOLEAN DEFAULT FALSE,
+    push_sent BOOLEAN DEFAULT FALSE,
+    
+    -- Timestamps
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    expires_at TIMESTAMPTZ
 );
-
--- ============================================
--- PLATFORM METRICS (Real-time)
--- ============================================
-
-CREATE TABLE platform_metrics (
-    id INTEGER PRIMARY KEY DEFAULT 1,
-    active_bookings INTEGER DEFAULT 0,
-    online_users INTEGER DEFAULT 0,
-    tvl_usd DECIMAL(15,2) DEFAULT 0.00,
-    total_revenue_usd DECIMAL(15,2) DEFAULT 0.00,
-    total_properties INTEGER DEFAULT 0,
-    total_users INTEGER DEFAULT 0,
-    last_updated TIMESTAMPTZ DEFAULT NOW()
-);
-
--- Initialize metrics
-INSERT INTO platform_metrics (id) VALUES (1) ON CONFLICT (id) DO NOTHING;
 
 -- ============================================
 -- INDEXES
 -- ============================================
 
-CREATE INDEX idx_properties_host_id ON properties(host_id);
+-- Profiles
+CREATE INDEX idx_profiles_email ON profiles(email);
+CREATE INDEX idx_profiles_wallet ON profiles(wallet_address);
+CREATE INDEX idx_profiles_role ON profiles(role);
+
+-- Properties
+CREATE INDEX idx_properties_host ON properties(host_id);
+CREATE INDEX idx_properties_location ON properties(country, city);
 CREATE INDEX idx_properties_status ON properties(status);
-CREATE INDEX idx_properties_seo_slug ON properties(seo_slug);
-CREATE INDEX idx_bookings_guest_id ON bookings(guest_id);
-CREATE INDEX idx_bookings_host_id ON bookings(host_id);
+CREATE INDEX idx_properties_slug ON properties(slug);
+CREATE INDEX idx_properties_geo ON properties(latitude, longitude);
+
+-- Bookings
+CREATE INDEX idx_bookings_guest ON bookings(guest_id);
+CREATE INDEX idx_bookings_host ON bookings(host_id);
+CREATE INDEX idx_bookings_property ON bookings(property_id);
 CREATE INDEX idx_bookings_status ON bookings(status);
 CREATE INDEX idx_bookings_dates ON bookings(check_in_date, check_out_date);
-CREATE INDEX idx_payment_transactions_booking_id ON payment_transactions(booking_id);
-CREATE INDEX idx_payment_transactions_user_id ON payment_transactions(user_id);
-CREATE INDEX idx_safe_vaults_user_id ON safe_vaults(user_id);
-CREATE INDEX idx_reviews_property_id ON reviews(property_id);
-CREATE INDEX idx_reviews_guest_id ON reviews(guest_id);
-CREATE INDEX idx_reputation_events_user_id ON reputation_events(user_id);
-CREATE INDEX idx_analytics_events_created ON analytics_events(created_at);
-CREATE INDEX idx_notifications_user_id ON notifications(user_id);
-CREATE INDEX idx_notifications_is_read ON notifications(is_read);
+
+-- Payments
+CREATE INDEX idx_payments_user ON payments(user_id);
+CREATE INDEX idx_payments_booking ON payments(booking_id);
+CREATE INDEX idx_payments_status ON payments(status);
+
+-- Reviews
+CREATE INDEX idx_reviews_property ON reviews(property_id);
+CREATE INDEX idx_reviews_reviewer ON reviews(reviewer_id);
+
+-- AI Content
+CREATE INDEX idx_ai_content_type ON ai_content(content_type);
+CREATE INDEX idx_ai_content_published ON ai_content(published);
+
+-- SEO Pages
+CREATE INDEX idx_seo_pages_slug ON seo_pages(slug);
+CREATE INDEX idx_seo_pages_language ON seo_pages(language);
+CREATE INDEX idx_seo_pages_location ON seo_pages(target_city, target_country);
+
+-- Real-time metrics
+CREATE INDEX idx_metrics_type_time ON real_time_metrics(metric_type, recorded_at);
 
 -- ============================================
--- TRIGGERS & FUNCTIONS
+-- COMMENTS
 -- ============================================
 
--- Updated_at trigger function
-CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
-BEGIN
-    NEW.updated_at = NOW();
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
--- Apply updated_at triggers
-CREATE TRIGGER update_profiles_updated_at BEFORE UPDATE ON profiles
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_properties_updated_at BEFORE UPDATE ON properties
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_bookings_updated_at BEFORE UPDATE ON bookings
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_safe_vaults_updated_at BEFORE UPDATE ON safe_vaults
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
--- Update platform metrics trigger
-CREATE OR REPLACE FUNCTION update_platform_metrics()
-RETURNS TRIGGER AS $$
-BEGIN
-    UPDATE platform_metrics SET
-        active_bookings = (SELECT COUNT(*) FROM bookings WHERE status IN ('payment_locked', 'checked_in')),
-        total_properties = (SELECT COUNT(*) FROM properties WHERE status = 'active'),
-        total_users = (SELECT COUNT(*) FROM profiles),
-        tvl_usd = (SELECT COALESCE(SUM(current_value_usd), 0) FROM safe_vaults),
-        last_updated = NOW();
-    RETURN NULL;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER trigger_update_metrics_bookings
-    AFTER INSERT OR UPDATE OR DELETE ON bookings
-    EXECUTE FUNCTION update_platform_metrics();
-
-CREATE TRIGGER trigger_update_metrics_properties
-    AFTER INSERT OR UPDATE OR DELETE ON properties
-    EXECUTE FUNCTION update_platform_metrics();
-
-CREATE TRIGGER trigger_update_metrics_profiles
-    AFTER INSERT OR DELETE ON profiles
-    EXECUTE FUNCTION update_platform_metrics();
-
--- ============================================
--- ROW LEVEL SECURITY (RLS)
--- ============================================
-
--- Enable RLS
-ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
-ALTER TABLE properties ENABLE ROW LEVEL SECURITY;
-ALTER TABLE bookings ENABLE ROW LEVEL SECURITY;
-ALTER TABLE payment_transactions ENABLE ROW LEVEL SECURITY;
-ALTER TABLE safe_vaults ENABLE ROW LEVEL SECURITY;
-ALTER TABLE reviews ENABLE ROW LEVEL SECURITY;
-ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
-
--- Profiles policies
-CREATE POLICY "Users can view own profile" ON profiles
-    FOR SELECT USING (auth.uid() = id);
-
-CREATE POLICY "Users can insert own profile" ON profiles
-    FOR INSERT WITH CHECK (auth.uid() = id);
-
-CREATE POLICY "Users can update own profile" ON profiles
-    FOR UPDATE USING (auth.uid() = id);
-
--- Properties policies
-CREATE POLICY "Anyone can view active properties" ON properties
-    FOR SELECT USING (status = 'active');
-
-CREATE POLICY "Hosts can manage own properties" ON properties
-    FOR ALL USING (auth.uid() = host_id);
-
--- Bookings policies
-CREATE POLICY "Guests can view own bookings" ON bookings
-    FOR SELECT USING (auth.uid() = guest_id OR auth.uid() = host_id);
-
-CREATE POLICY "Guests can create bookings" ON bookings
-    FOR INSERT WITH CHECK (auth.uid() = guest_id);
-
--- Reviews policies
-CREATE POLICY "Anyone can view reviews" ON reviews
-    FOR SELECT USING (TRUE);
-
-CREATE POLICY "Verified guests can create reviews" ON reviews
-    FOR INSERT WITH CHECK (auth.uid() = guest_id);
-
--- Notifications policies
-CREATE POLICY "Users can view own notifications" ON notifications
-    FOR SELECT USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can update own notifications" ON notifications
-    FOR UPDATE USING (auth.uid() = user_id);
-
--- ============================================
--- INITIAL DATA
--- ============================================
-
--- Insert admin user (will be updated after auth signup)
-INSERT INTO profiles (id, email, full_name, role) VALUES
-    ('00000000-0000-0000-0000-000000000001', 'admin@openbooking.com', 'System Admin', 'admin');
-
--- Legal documents (English version)
-INSERT INTO legal_documents (document_type, version, language, title, content, is_active, effective_from) VALUES
-    ('terms', '1.0.0', 'en', 'Terms of Service', '<h1>OpenBooking Terms of Service</h1><p>Effective Date: 2026-02-21</p><h2>1. Acceptance of Terms</h2><p>By accessing and using OpenBooking platform...</p>', TRUE, '2026-02-21'),
-    ('privacy', '1.0.0', 'en', 'Privacy Policy', '<h1>Privacy Policy</h1><p>Your privacy is important to us...</p>', TRUE, '2026-02-21'),
-    ('offer', '1.0.0', 'en', 'Public Offer Agreement', '<h1>Public Offer Agreement</h1><p>This agreement governs the use of booking services...</p>', TRUE, '2026-02-21');
-
-COMMENT ON TABLE profiles IS 'User profiles with RBAC roles (client, host, admin)';
-COMMENT ON TABLE properties IS 'Property listings with multilingual support';
-COMMENT ON TABLE bookings IS 'Booking escrow state machine';
-COMMENT ON TABLE payment_transactions IS 'Payment transaction ledger';
-COMMENT ON TABLE safe_vaults IS 'DeFi Safe Vault for yield generation';
-COMMENT ON TABLE reviews IS 'Review and rating system';
-COMMENT ON TABLE reputation_events IS 'Blockchain-style reputation ledger';
-COMMENT ON TABLE ai_content IS 'AI-generated content storage';
-COMMENT ON TABLE seo_pages IS 'SEO-optimized pages with Schema.org markup';
-COMMENT ON TABLE legal_documents IS 'Versioned legal documents CMS';
+COMMENT ON TABLE profiles IS 'User profiles with RBAC and Web3 wallet support';
+COMMENT ON TABLE bookings IS 'Booking system with escrow state machine';
+COMMENT ON TABLE safe_vaults IS 'DeFi vault positions for yield generation';
+COMMENT ON TABLE ai_content IS 'AI-generated content for marketing and SEO';
+COMMENT ON TABLE legal_documents IS 'Versioned legal documents with multi-language support';

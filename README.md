@@ -1,51 +1,116 @@
-# 👑 OpenBooking
+# 👑 OpenBooking — Trust Economy Protocol
 
-> **Autonomous Trust Economy Platform**
+> Global decentralized booking infrastructure combining Finance + AI Growth + Travel Economy + Reputation Protocol
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js)](https://nextjs.org)
-[![React](https://img.shields.io/badge/React-19-61dafb?logo=react)](https://react.dev)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6?logo=typescript)](https://www.typescriptlang.org)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind-4-38bdf8?logo=tailwindcss)](https://tailwindcss.com)
-[![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?logo=supabase)](https://supabase.com)
+[![CI/CD](https://github.com/zametkikostik/OpenBooking/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/zametkikostik/OpenBooking/actions/workflows/ci-cd.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)](https://www.typescriptlang.org/)
+[![Next.js](https://img.shields.io/badge/Next.js-15-black?logo=next.js)](https://nextjs.org/)
 
----
+## 🏗 Architecture
 
-## 🎯 Vision
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                     OPENBOOKING PLATFORM                         │
+├─────────────────────────────────────────────────────────────────┤
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐             │
+│  │   Web App   │  │  Mobile App │  │   API/GraphQL│             │
+│  │  (Next.js)  │  │  (React Nat.)│  │   (Edge Fn) │             │
+│  └──────┬──────┘  └──────┬──────┘  └──────┬──────┘             │
+│         │                │                │                     │
+│         └────────────────┴────────────────┘                     │
+│                          │                                      │
+│              ┌───────────▼───────────┐                         │
+│              │   Supabase (Postgres) │                         │
+│              │   + Auth + Storage    │                         │
+│              └───────────┬───────────┘                         │
+│                          │                                      │
+│         ┌────────────────┼────────────────┐                    │
+│         │                │                │                    │
+│  ┌──────▼──────┐  ┌──────▼──────┐  ┌──────▼──────┐            │
+│  │   Web3      │  │    AI       │  │   Payment   │            │
+│  │  (Ethers)   │  │  Services   │  │   Adapter   │            │
+│  └─────────────┘  └─────────────┘  └─────────────┘            │
+└─────────────────────────────────────────────────────────────────┘
+```
 
-OpenBooking = **Trust Economy Protocol** + **AI Growth Company** + **Web3 Finance Infrastructure** + **Reputation Network** + **Global Travel OS**
+## ✨ Features
 
-## ✨ Key Features
+### 🔒 Escrow Financial Protocol
+- **State Machine**: `pending` → `payment_locked` → `confirmed` → `checked_in` → `completed` → `settled`
+- **Protection**: After check-in, hosts cannot cancel, admins cannot withdraw
+- **Blockchain**: Smart contract logs all events on-chain
 
-| Feature | Description |
-|---------|-------------|
-| 🏦 **Escrow Protocol** | Secure payments with state machine protection |
-| 💎 **DeFi Vault** | Earn yield on idle funds via Aave |
-| 🌍 **Multi-Currency** | Crypto (USDT, ETH) + Fiat (SBP, SEPA, Mir) |
-| 🤖 **AI System** | Auto-generate content, SEO, pricing |
-| 📊 **Real-time** | Live metrics via WebSocket |
-| 🧾 **Legal Engine** | Multi-language document CMS |
-| 🌐 **i18n** | 9 languages supported |
-| 🔐 **RBAC** | Client, Host, Admin roles |
+### 💰 Multi-Currency Payments
+| Crypto | Fiat (Russia) | Fiat (EU) | Bulgaria |
+|--------|--------------|-----------|----------|
+| USDT | SBP | SEPA | Borica |
+| USDC | Mir | Adyen | ePay.bg |
+| ETH | YooKassa | Klarna | — |
+| OBT Token | — | — | — |
+
+### 🤖 AI Autonomous System
+- **Marketing AI**: Auto-generates ads, SEO pages, travel guides
+- **Growth AI**: Optimizes CAC, LTV, funnel conversion
+- **SEO AI**: Creates city/district pages with Schema.org markup
+- **Dynamic Pricing**: AI-powered price optimization
+
+### 🏦 DeFi Safe Vault Economy
+- **Yield Generation**: Integrate with Aave
+- **APY Tracking**: Real-time yield monitoring
+- **Risk Scores**: Built-in risk assessment
+
+### 🌍 Internationalization
+- **9 Languages**: EN, RU, BG, UA, DE, FR, ES, PL, TR
+- **Local Payment Methods**: Region-specific gateways
+- **Multi-Currency**: USD, EUR, RUB, BGN, etc.
 
 ## 🚀 Quick Start
 
+### Prerequisites
+- Node.js 20+
+- npm or yarn
+- Supabase CLI
+- Docker (optional)
+
+### 1. Clone Repository
 ```bash
-# Clone repository
 git clone https://github.com/zametkikostik/OpenBooking.git
 cd OpenBooking
+```
 
-# Install dependencies
+### 2. Install Dependencies
+```bash
 npm install
+```
 
-# Start local Supabase
-supabase start
+### 3. Setup Environment
+```bash
+cp .env.local.example .env.local
+# Edit .env.local with your credentials
+```
 
-# Run development server
+### 4. Start Local Supabase
+```bash
+npx supabase start
+```
+
+### 5. Run Migrations
+```bash
+npx supabase migration up
+```
+
+### 6. Seed Database (Optional)
+```bash
+npm run db:seed
+```
+
+### 7. Start Development Server
+```bash
 npm run dev
 ```
 
-Open http://localhost:3000
+Open [http://localhost:3000](http://localhost:3000)
 
 ## 📁 Project Structure
 
@@ -54,100 +119,141 @@ OpenBooking/
 ├── src/
 │   ├── app/              # Next.js App Router
 │   ├── components/       # React Components
-│   ├── hooks/           # Custom Hooks
-│   ├── i18n/            # Internationalization
-│   ├── lib/             # Utilities
-│   ├── services/        # Business Logic
-│   └── types/           # TypeScript Types
-├── supabase/            # Database Schema
-└── .github/            # GitHub Templates
+│   ├── lib/              # Core Libraries
+│   │   ├── supabase/     # Supabase client
+│   │   ├── web3/         # Web3 integration
+│   │   ├── payments/     # Payment adapters
+│   │   ├── ai/           # AI services
+│   │   ├── legal/        # Legal engine
+│   │   ├── i18n/         # Internationalization
+│   │   └── monitoring/   # Real-time metrics
+│   ├── types/            # TypeScript types
+│   └── hooks/            # React hooks
+├── supabase/
+│   ├── migrations/       # Database migrations
+│   ├── functions/        # Edge functions
+│   └── templates/        # Email templates
+├── scripts/              # Utility scripts
+├── k8s/                  # Kubernetes configs
+├── .github/
+│   └── workflows/        # CI/CD pipelines
+└── docker-compose.yml    # Docker setup
 ```
 
-## 🗄️ Database Tables
+## 🗄 Database Schema
 
-- `profiles` — Users with RBAC
-- `properties` — Listings
-- `bookings` — Escrow state machine
-- `payment_transactions` — Ledger
-- `safe_vaults` — DeFi yield
-- `reviews` — Ratings
-- `legal_documents` — CMS
-- `analytics_events` — GDPR-compliant tracking
-- `notifications` — Real-time alerts
-- `platform_metrics` — Live stats
+### Core Tables
+- **profiles**: User profiles with RBAC
+- **host_profiles**: Host-specific data
+- **properties**: Property listings
+- **bookings**: Booking state machine
+- **payments**: Payment records
+- **safe_vaults**: DeFi positions
+- **reviews**: Review system
+- **ai_content**: AI-generated content
+- **seo_pages**: SEO-optimized pages
+- **legal_documents**: Versioned legal docs
 
-## 🛠️ Tech Stack
-
-**Frontend**
-- Next.js 16 (App Router)
-- React 19
-- TypeScript 5
-- Tailwind CSS 4
-- Framer Motion
-- next-intl
-
-**Backend**
-- Supabase (PostgreSQL + Auth)
+### Key Features
 - Row Level Security (RLS)
-- Realtime subscriptions
+- Real-time subscriptions
+- Automatic triggers
+- Full-text search
 
-**Web3**
-- Viem
-- Smart Contracts (Escrow)
-- ERC20 Tokens
+## 🔐 Security
 
-**Services**
-- AI Content Generation
-- DeFi (Aave)
-- Payment Adapter
-- Legal Engine
+### Authentication
+- Supabase Auth (Email, OAuth, Wallet)
+- JWT tokens
+- Session management
 
-## 🌐 Supported Languages
+### Authorization
+- RBAC (Client, Host, Admin, Super Admin)
+- Row Level Security policies
+- API rate limiting
 
-🇺🇸 English · 🇷🇺 Русский · 🇧🇬 Български · 🇺🇦 Українська · 🇩🇪 Deutsch · 🇫🇷 Français · 🇪🇸 Español · 🇵🇱 Polski · 🇹🇷 Türkçe
+### Data Protection
+- Encryption at rest (AES-256)
+- Encryption in transit (TLS 1.3)
+- GDPR compliance
+- Cookie consent
 
-## 📈 Roadmap
+## 📊 Monitoring
 
-- [x] Core Platform
-- [x] Escrow System
-- [x] Multi-language
-- [x] Legal Engine
-- [ ] Mobile Apps
-- [ ] NFT Marketplace
-- [ ] DAO Governance
+### Real-time Metrics
+- Active bookings
+- Online users
+- Total Value Locked (TVL)
+- Revenue tracking
+
+### Stack
+- Prometheus (metrics)
+- Grafana (dashboards)
+- Loki (logs)
+- Redis (caching)
+
+## 🚢 Deployment
+
+### Local Development
+```bash
+docker-compose up
+```
+
+### Production (Kubernetes)
+```bash
+kubectl apply -f k8s/deployment.yaml
+```
+
+### CI/CD
+- GitHub Actions
+- Automated testing
+- Security scanning
+- Auto-deployment
+
+## 🧪 Testing
+
+```bash
+# Unit tests
+npm test
+
+# Integration tests
+npm run test:integration
+
+# E2E tests
+npm run test:e2e
+```
+
+## 📖 API Documentation
+
+### REST Endpoints
+- `GET /api/properties` - List properties
+- `POST /api/bookings` - Create booking
+- `GET /api/bookings/:id` - Get booking details
+- `POST /api/payments` - Process payment
+
+### GraphQL (Coming Soon)
+- Queries for data fetching
+- Mutations for state changes
+- Subscriptions for real-time updates
 
 ## 🤝 Contributing
 
-We welcome contributions! See our [Contributing Guide](CONTRIBUTING.md) for details.
-
-### Quick Start for Contributors
-
-```bash
-# Fork repository
-# Clone your fork
-git clone https://github.com/YOUR_USERNAME/OpenBooking.git
-
-# Create feature branch
-git checkout -b feature/amazing-feature
-
-# Make changes and commit
-git commit -m "feat: add amazing feature"
-
-# Push and create PR
-git push origin feature/amazing-feature
-```
+1. Fork the repository
+2. Create feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit changes (`git commit -m 'Add amazing feature'`)
+4. Push to branch (`git push origin feature/amazing-feature`)
+5. Open Pull Request
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+MIT License - see [LICENSE](LICENSE) for details.
 
-## 📞 Contact
+## 🌟 Vision
 
-- **GitHub**: https://github.com/zametkikostik/OpenBooking
-- **Email**: team@openbooking.io
+OpenBooking = **Trust Economy Protocol** + **AI Growth Company** + **Web3 Finance Infrastructure** + **Reputation Network** + **Global Travel OS**
 
 ---
 
 <p align="center">
-  <strong>Built with ❤️ for the decentralized future of travel</strong>
+  <strong>Built with ❤️ by OpenBooking Team</strong>
 </p>
