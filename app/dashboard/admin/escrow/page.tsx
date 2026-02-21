@@ -34,7 +34,7 @@ export default function AdminEscrowPage() {
           </Card>
           <Card>
             <CardHeader>
-              <CardTitle>Ожидает释放</CardTitle>
+              <CardTitle>Ожидает выплаты</CardTitle>
               <CardDescription>Готовы к выплате</CardDescription>
             </CardHeader>
             <CardContent>
