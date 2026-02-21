@@ -1,157 +1,217 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 const languages = [
-  { code: 'ru', name: 'Русский' },
-  { code: 'en', name: 'English' },
-  { code: 'bg', name: 'Български' },
-  { code: 'ua', name: 'Українська' },
-  { code: 'de', name: 'Deutsch' },
-  { code: 'fr', name: 'Français' },
-  { code: 'es', name: 'Español' },
-  { code: 'pl', name: 'Polski' },
-  { code: 'tr', name: 'Türkçe' },
+  { code: 'ru', name: 'Русский', flag: '🇷🇺' },
+  { code: 'en', name: 'English', flag: '🇬🇧' },
+  { code: 'bg', name: 'Български', flag: '🇧🇬' },
+  { code: 'ua', name: 'Українська', flag: '🇺🇦' },
+  { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
+  { code: 'fr', name: 'Français', flag: '🇫🇷' },
+  { code: 'es', name: 'Español', flag: '🇪🇸' },
+  { code: 'pl', name: 'Polski', flag: '🇵🇱' },
+  { code: 'tr', name: 'Türkçe', flag: '🇹🇷' },
 ];
 
 const companyLinks = [
-  { href: '/about', label: 'О нас' },
-  { href: '/careers', label: 'Карьера' },
-  { href: '/press', label: 'Пресса' },
+  { href: '/about', label: 'О нас', icon: '🏢' },
+  { href: '/careers', label: 'Карьера', icon: '💼' },
+  { href: '/press', label: 'Пресса', icon: '📰' },
 ];
 
 const supportLinks = [
-  { href: '/help', label: 'Помощь' },
-  { href: '/safety', label: 'Безопасность' },
-  { href: '/contact', label: 'Контакты' },
+  { href: '/help', label: 'Помощь', icon: '❓' },
+  { href: '/safety', label: 'Безопасность', icon: '🛡️' },
+  { href: '/contact', label: 'Контакты', icon: '📧' },
 ];
 
 const legalLinks = [
-  { href: '/terms', label: 'Условия' },
-  { href: '/privacy', label: 'Конфиденциальность' },
-  { href: '/cookies', label: 'Cookies' },
+  { href: '/terms', label: 'Условия', icon: '📄' },
+  { href: '/privacy', label: 'Конфиденциальность', icon: '🔒' },
+  { href: '/cookies', label: 'Cookies', icon: '🍪' },
 ];
 
 export function Footer() {
   const pathname = usePathname();
+  const router = useRouter();
+  const [currentLang, setCurrentLang] = useState('ru');
 
   const handleLanguageChange = (code: string) => {
-    // Store language preference
+    setCurrentLang(code);
+    // Сохраняем язык в cookie
     document.cookie = `NEXT_LOCALE=${code};path=/;max-age=31536000`;
-    // Reload page to apply language
-    window.location.reload();
+    
+    // Перезагружаем страницу для применения языка
+    router.refresh();
   };
 
   return (
-    <footer className="bg-card border-t">
-      <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-          {/* Company */}
-          <div>
-            <h3 className="font-semibold text-lg mb-4">Компания</h3>
-            <ul className="space-y-2">
-              {companyLinks.map((link) => (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    className={`text-sm text-muted-foreground hover:text-foreground transition-colors ${
-                      pathname === link.href ? 'text-foreground font-medium' : ''
-                    }`}
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
+    <footer className="bg-gradient-to-b from-card to-muted border-t">
+      <div className="container mx-auto px-4 py-16">
+        {/* Main Footer Content */}
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8 mb-12">
+          {/* Logo & Description */}
+          <div className="col-span-2 lg:col-span-2">
+            <Link href="/" className="flex items-center gap-3 mb-4">
+              <span className="text-4xl">🏠</span>
+              <div>
+                <span className="text-2xl font-bold block">OpenBooking</span>
+                <span className="text-xs text-muted-foreground">Trust Economy Platform</span>
+              </div>
+            </Link>
+            <p className="text-sm text-muted-foreground mb-6 max-w-sm">
+              Децентрализованная платформа бронирования нового поколения с защитой средств через Escrow и интеграцией Web3 технологий.
+            </p>
+            <div className="flex gap-3">
+              <SocialLink href="https://github.com/zametkikostik/OpenBooking" icon="🐙" label="GitHub" />
+              <SocialLink href="#" icon="🐦" label="Twitter" />
+              <SocialLink href="#" icon="💼" label="LinkedIn" />
+              <SocialLink href="#" icon="📸" label="Instagram" />
+            </div>
           </div>
+
+          {/* Company */}
+          <FooterSection 
+            title="Компания" 
+            icon="🏢"
+            links={companyLinks} 
+            pathname={pathname}
+          />
 
           {/* Support */}
-          <div>
-            <h3 className="font-semibold text-lg mb-4">Поддержка</h3>
-            <ul className="space-y-2">
-              {supportLinks.map((link) => (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    className={`text-sm text-muted-foreground hover:text-foreground transition-colors ${
-                      pathname === link.href ? 'text-foreground font-medium' : ''
-                    }`}
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
+          <FooterSection 
+            title="Поддержка" 
+            icon="🎧"
+            links={supportLinks} 
+            pathname={pathname}
+          />
 
-          {/* Legal */}
-          <div>
-            <h3 className="font-semibold text-lg mb-4">Правовая информация</h3>
-            <ul className="space-y-2">
-              {legalLinks.map((link) => (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    className={`text-sm text-muted-foreground hover:text-foreground transition-colors ${
-                      pathname === link.href ? 'text-foreground font-medium' : ''
-                    }`}
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
+          {/* Legal & Languages */}
+          <div className="space-y-8">
+            <FooterSection 
+              title="Правовая информация" 
+              icon="⚖️"
+              links={legalLinks} 
+              pathname={pathname}
+            />
 
-          {/* Languages */}
-          <div>
-            <h3 className="font-semibold text-lg mb-4">Языки</h3>
-            <div className="flex flex-wrap gap-2">
-              {languages.map((lang) => (
-                <button
-                  key={lang.code}
-                  onClick={() => handleLanguageChange(lang.code)}
-                  className={`px-2 py-1 text-xs rounded transition-colors ${
-                    pathname.startsWith(`/${lang.code}`)
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted hover:bg-muted-foreground/20'
-                  }`}
-                  title={lang.name}
-                >
-                  {lang.code.toUpperCase()}
-                </button>
-              ))}
+            {/* Languages */}
+            <div>
+              <h3 className="font-semibold text-sm uppercase tracking-wider mb-4 flex items-center gap-2">
+                <span>🌍</span> Языки
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {languages.map((lang) => (
+                  <button
+                    key={lang.code}
+                    onClick={() => handleLanguageChange(lang.code)}
+                    className={`group px-3 py-2 text-xs rounded-lg transition-all duration-200 ${
+                      currentLang === lang.code
+                        ? 'bg-primary text-primary-foreground shadow-md scale-105'
+                        : 'bg-muted hover:bg-muted-foreground/20 hover:scale-105'
+                    }`}
+                    title={lang.name}
+                  >
+                    <span className="mr-1">{lang.flag}</span>
+                    {lang.code.toUpperCase()}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Bottom bar */}
-        <div className="mt-8 pt-8 border-t">
+        {/* Divider */}
+        <div className="border-t pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <div className="flex items-center gap-2">
-              <span className="text-2xl">🏠</span>
-              <span className="font-bold text-xl">OpenBooking</span>
+            {/* Copyright */}
+            <div className="text-sm text-muted-foreground">
+              <p>© 2026 OpenBooking. Все права защищены.</p>
             </div>
-            <p className="text-sm text-muted-foreground">
-              © 2026 OpenBooking. Все права защищены.
-            </p>
-            <div className="flex gap-4">
-              <a
-                href="https://github.com/zametkikostik/OpenBooking"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-muted-foreground hover:text-foreground transition-colors"
-                title="GitHub"
-              >
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-                </svg>
-              </a>
+
+            {/* Payment Methods */}
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-muted-foreground mr-2">Принимаем:</span>
+              <PaymentBadge symbol="ETH" color="bg-blue-600" />
+              <PaymentBadge symbol="DAI" color="bg-yellow-500" />
+              <PaymentBadge symbol="A7A5" color="bg-purple-600" />
+              <PaymentBadge symbol="VISA" color="bg-slate-800" />
+              <PaymentBadge symbol="MC" color="bg-red-600" />
             </div>
+
+            {/* Back to top */}
+            <button
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <span>↑</span> Наверх
+            </button>
           </div>
         </div>
       </div>
     </footer>
+  );
+}
+
+function FooterSection({ 
+  title, 
+  icon,
+  links, 
+  pathname 
+}: { 
+  title: string; 
+  icon: string;
+  links: { href: string; label: string; icon?: string }[]; 
+  pathname: string;
+}) {
+  return (
+    <div>
+      <h3 className="font-semibold text-sm uppercase tracking-wider mb-4 flex items-center gap-2">
+        <span>{icon}</span> {title}
+      </h3>
+      <ul className="space-y-3">
+        {links.map((link) => (
+          <li key={link.href}>
+            <Link
+              href={link.href}
+              className={`group flex items-center gap-2 text-sm transition-all duration-200 ${
+                pathname === link.href
+                  ? 'text-primary font-medium translate-x-1'
+                  : 'text-muted-foreground hover:text-foreground hover:translate-x-1'
+              }`}
+            >
+              {link.icon && <span className="opacity-50 group-hover:opacity-100 transition-opacity">{link.icon}</span>}
+              {link.label}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function SocialLink({ href, icon, label }: { href: string; icon: string; label: string }) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-xl hover:bg-primary hover:text-primary-foreground transition-all duration-200 hover:scale-110"
+      title={label}
+      aria-label={label}
+    >
+      {icon}
+    </a>
+  );
+}
+
+function PaymentBadge({ symbol, color }: { symbol: string; color: string }) {
+  return (
+    <div className={`w-8 h-5 ${color} rounded flex items-center justify-center text-white text-xs font-bold`}>
+      {symbol}
+    </div>
   );
 }
