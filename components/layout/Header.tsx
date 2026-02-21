@@ -1,12 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import { usei18n } from '@/lib/i18n/context';
+import { useTranslations } from '@/lib/i18n/useTranslations';
 import { Button } from '@/components/ui/button';
 import { WalletConnect } from '@/components/shared/WalletConnect';
 
 export function Header() {
-  const { t } = usei18n();
+  const { t } = useTranslations();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">

@@ -1,10 +1,10 @@
 'use client';
 
-import { usei18n } from '@/lib/i18n/context';
+import { useTranslations } from '@/lib/i18n/useTranslations';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function AboutPage() {
-  const { t } = usei18n();
+  const { t } = useTranslations();
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white">

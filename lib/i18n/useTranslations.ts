@@ -1,26 +1,14 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { useState, useEffect } from 'react';
 
-type Locale = 'ru' | 'en' | 'bg' | 'ua' | 'de' | 'fr' | 'es' | 'pl' | 'tr';
-
-interface i18nContextType {
-  locale: Locale;
-  setLocale: (locale: Locale) => void;
-  t: (key: string) => string;
-}
-
-const i18nContext = createContext<i18nContextType | undefined>(undefined);
-
-export const translations = {
+const translations: Record<string, Record<string, string>> = {
   ru: {
-    // Header
     'nav.properties': 'Недвижимость',
     'nav.vault': 'Vault',
     'nav.about': 'О нас',
     'nav.login': 'Войти',
     'nav.signup': 'Регистрация',
-    // Footer
     'footer.company': 'Компания',
     'footer.support': 'Поддержка',
     'footer.legal': 'Правовая информация',
@@ -38,7 +26,6 @@ export const translations = {
     'footer.copyright': '© 2026 OpenBooking. Все права защищены.',
     'footer.accepts': 'Принимаем:',
     'footer.backToTop': 'Наверх',
-    // About
     'about.title': 'О нас',
     'about.subtitle': 'OpenBooking — платформа бронирования нового поколения',
     'about.mission': 'Наша миссия',
@@ -74,7 +61,6 @@ export const translations = {
     'about.github': 'GitHub',
     'about.office': 'Офис',
     'about.officeValue': 'Remote-first • Работаем по всему миру',
-    // Login
     'login.title': 'Вход',
     'login.desc': 'Введите свои данные для входа в аккаунт',
     'login.email': 'Email',
@@ -89,7 +75,6 @@ export const translations = {
     'login.admin': 'Admin:',
     'login.host': 'Host:',
     'login.client': 'Client:',
-    // Signup
     'signup.title': 'Регистрация',
     'signup.desc': 'Создайте аккаунт для использования платформы',
     'signup.fullName': 'ФИО',
@@ -105,13 +90,11 @@ export const translations = {
     'signup.login': 'Войти',
   },
   en: {
-    // Header
     'nav.properties': 'Properties',
     'nav.vault': 'Vault',
     'nav.about': 'About',
     'nav.login': 'Login',
     'nav.signup': 'Sign Up',
-    // Footer
     'footer.company': 'Company',
     'footer.support': 'Support',
     'footer.legal': 'Legal',
@@ -129,7 +112,6 @@ export const translations = {
     'footer.copyright': '© 2026 OpenBooking. All rights reserved.',
     'footer.accepts': 'Accepts:',
     'footer.backToTop': 'Top',
-    // About
     'about.title': 'About Us',
     'about.subtitle': 'OpenBooking — next-generation booking platform',
     'about.mission': 'Our Mission',
@@ -165,7 +147,6 @@ export const translations = {
     'about.github': 'GitHub',
     'about.office': 'Office',
     'about.officeValue': 'Remote-first • Working worldwide',
-    // Login
     'login.title': 'Login',
     'login.desc': 'Enter your credentials to access your account',
     'login.email': 'Email',
@@ -180,7 +161,6 @@ export const translations = {
     'login.admin': 'Admin:',
     'login.host': 'Host:',
     'login.client': 'Client:',
-    // Signup
     'signup.title': 'Sign Up',
     'signup.desc': 'Create an account to use the platform',
     'signup.fullName': 'Full Name',
@@ -196,13 +176,11 @@ export const translations = {
     'signup.login': 'Login',
   },
   bg: {
-    // Header
     'nav.properties': 'Имоти',
     'nav.vault': 'Vault',
     'nav.about': 'Относно',
     'nav.login': 'Вход',
     'nav.signup': 'Регистрация',
-    // Footer
     'footer.company': 'Компания',
     'footer.support': 'Подкрепа',
     'footer.legal': 'Правна информация',
@@ -220,7 +198,6 @@ export const translations = {
     'footer.copyright': '© 2026 OpenBooking. Всички права запазени.',
     'footer.accepts': 'Приемаме:',
     'footer.backToTop': 'Нагоре',
-    // About (same structure, BG translations)
     'about.title': 'Относно нас',
     'about.subtitle': 'OpenBooking — платформа за резервации от ново поколение',
     'about.mission': 'Нашата мисия',
@@ -256,7 +233,6 @@ export const translations = {
     'about.github': 'GitHub',
     'about.office': 'Офис',
     'about.officeValue': 'Remote-first • Работим по целия свят',
-    // Login
     'login.title': 'Вход',
     'login.desc': 'Въведете данните си за достъп',
     'login.email': 'Email',
@@ -271,7 +247,6 @@ export const translations = {
     'login.admin': 'Admin:',
     'login.host': 'Host:',
     'login.client': 'Client:',
-    // Signup
     'signup.title': 'Регистрация',
     'signup.desc': 'Създайте акаунт за да използвате платформата',
     'signup.fullName': 'Име',
@@ -287,13 +262,11 @@ export const translations = {
     'signup.login': 'Вход',
   },
   ua: {
-    // Header
     'nav.properties': 'Нерухомість',
     'nav.vault': 'Vault',
     'nav.about': 'Про нас',
     'nav.login': 'Увійти',
     'nav.signup': 'Реєстрація',
-    // Footer
     'footer.company': 'Компанія',
     'footer.support': 'Підтримка',
     'footer.legal': 'Правова інформація',
@@ -311,7 +284,6 @@ export const translations = {
     'footer.copyright': '© 2026 OpenBooking. Всі права захищено.',
     'footer.accepts': 'Приймаємо:',
     'footer.backToTop': 'Нагору',
-    // About
     'about.title': 'Про нас',
     'about.subtitle': 'OpenBooking — платформа бронювання нового покоління',
     'about.mission': 'Наша місія',
@@ -347,7 +319,6 @@ export const translations = {
     'about.github': 'GitHub',
     'about.office': 'Офіс',
     'about.officeValue': 'Remote-first • Працюємо по всьому світу',
-    // Login
     'login.title': 'Вхід',
     'login.desc': 'Введіть свої дані для входу',
     'login.email': 'Email',
@@ -362,7 +333,6 @@ export const translations = {
     'login.admin': 'Admin:',
     'login.host': 'Host:',
     'login.client': 'Client:',
-    // Signup
     'signup.title': 'Реєстрація',
     'signup.desc': 'Створіть акаунт для використання платформи',
     'signup.fullName': "ПІБ",
@@ -379,42 +349,28 @@ export const translations = {
   },
 };
 
-export function i18nProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>('ru');
+export function useTranslations(defaultLocale = 'ru') {
+  const [locale, setLocale] = useState(defaultLocale);
 
   useEffect(() => {
     const savedLocale = document.cookie
       .split('; ')
       .find(row => row.startsWith('NEXT_LOCALE='))
-      ?.split('=')[1] as Locale || 'ru';
-    setLocaleState(savedLocale);
-  }, []);
-
-  const setLocale = (newLocale: Locale) => {
-    setLocaleState(newLocale);
-    document.cookie = `NEXT_LOCALE=${newLocale};path=/;max-age=31536000`;
-  };
+      ?.split('=')[1] || defaultLocale;
+    setLocale(savedLocale);
+  }, [defaultLocale]);
 
   const t = (key: string): string => {
-    return (translations[locale] as Record<string, string>)[key] || translations.ru[key as keyof typeof translations.ru] || key;
+    return translations[locale]?.[key] || translations[defaultLocale]?.[key] || key;
   };
 
-  return (
-    <i18nContext.Provider value={{ locale, setLocale, t }}>
-      {children}
-    </i18nContext.Provider>
-  );
+  const changeLocale = (newLocale: string) => {
+    setLocale(newLocale);
+    document.cookie = `NEXT_LOCALE=${newLocale};path=/;max-age=31536000`;
+    window.location.reload();
+  };
+
+  return { t, locale, changeLocale };
 }
 
-export function usei18n() {
-  const context = useContext(i18nContext);
-  if (context === undefined) {
-    // Return default values instead of throwing
-    return {
-      locale: 'ru' as Locale,
-      setLocale: () => {},
-      t: (key: string) => key,
-    };
-  }
-  return context;
-}
+export { translations };

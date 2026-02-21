@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { usei18n } from '@/lib/i18n/context';
+import { useTranslations } from '@/lib/i18n/useTranslations';
 import { usePathname } from 'next/navigation';
 
 const languages = [
@@ -18,11 +18,7 @@ const languages = [
 
 export function Footer() {
   const pathname = usePathname();
-  const { locale, setLocale, t } = usei18n();
-
-  const handleLanguageChange = (code: string) => {
-    setLocale(code as any);
-  };
+  const { t, locale, changeLocale } = useTranslations();
 
   return (
     <footer className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white border-t border-slate-700">
@@ -87,7 +83,7 @@ export function Footer() {
                 {languages.map((lang) => (
                   <button
                     key={lang.code}
-                    onClick={() => handleLanguageChange(lang.code)}
+                    onClick={() => changeLocale(lang.code)}
                     className={`px-2 py-1.5 text-xs rounded-lg transition-all ${
                       locale === lang.code
                         ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg scale-105 font-bold'
