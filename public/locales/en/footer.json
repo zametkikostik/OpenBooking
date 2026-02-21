@@ -1,0 +1,38 @@
+{
+  "footer": {
+    "company": "Company",
+    "about": "About Us",
+    "careers": "Careers",
+    "press": "Press",
+    "support": "Support",
+    "help": "Help",
+    "safety": "Safety",
+    "contact": "Contact",
+    "legal": "Legal",
+    "terms": "Terms of Service",
+    "privacy": "Privacy Policy",
+    "cookies": "Cookies",
+    "languages": "Languages",
+    "description": "Next-generation decentralized booking platform with Escrow payment protection and Web3 technology integration.",
+    "copyright": "© 2026 OpenBooking. All rights reserved.",
+    "accepts": "We accept:",
+    "backToTop": "↑ Back to Top"
+  },
+  "social": {
+    "github": "GitHub",
+    "twitter": "Twitter",
+    "linkedin": "LinkedIn",
+    "instagram": "Instagram"
+  },
+  "languages": {
+    "ru": "Русский",
+    "en": "English",
+    "bg": "Български",
+    "ua": "Українська",
+    "de": "Deutsch",
+    "fr": "Français",
+    "es": "Español",
+    "pl": "Polski",
+    "tr": "Türkçe"
+  }
+}

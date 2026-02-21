@@ -1,0 +1,38 @@
+{
+  "footer": {
+    "company": "Компания",
+    "about": "О нас",
+    "careers": "Карьера",
+    "press": "Пресса",
+    "support": "Поддержка",
+    "help": "Помощь",
+    "safety": "Безопасность",
+    "contact": "Контакты",
+    "legal": "Правовая информация",
+    "terms": "Условия",
+    "privacy": "Конфиденциальность",
+    "cookies": "Cookies",
+    "languages": "Языки",
+    "description": "Децентрализованная платформа бронирования нового поколения с защитой средств через Escrow и интеграцией Web3 технологий.",
+    "copyright": "© 2026 OpenBooking. Все права защищены.",
+    "accepts": "Принимаем:",
+    "backToTop": "↑ Наверх"
+  },
+  "social": {
+    "github": "GitHub",
+    "twitter": "Twitter",
+    "linkedin": "LinkedIn",
+    "instagram": "Instagram"
+  },
+  "languages": {
+    "ru": "Русский",
+    "en": "English",
+    "bg": "Български",
+    "ua": "Українська",
+    "de": "Deutsch",
+    "fr": "Français",
+    "es": "Español",
+    "pl": "Polski",
+    "tr": "Türkçe"
+  }
+}
