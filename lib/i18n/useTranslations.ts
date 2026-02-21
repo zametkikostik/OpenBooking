@@ -351,8 +351,10 @@ const translations: Record<string, Record<string, string>> = {
 
 export function useTranslations(defaultLocale = 'ru') {
   const [locale, setLocale] = useState(defaultLocale);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     const savedLocale = document.cookie
       .split('; ')
       .find(row => row.startsWith('NEXT_LOCALE='))
@@ -361,12 +363,14 @@ export function useTranslations(defaultLocale = 'ru') {
   }, [defaultLocale]);
 
   const t = (key: string): string => {
+    if (!mounted) return key;
     return translations[locale]?.[key] || translations[defaultLocale]?.[key] || key;
   };
 
   const changeLocale = (newLocale: string) => {
     setLocale(newLocale);
     document.cookie = `NEXT_LOCALE=${newLocale};path=/;max-age=31536000`;
+    // Force reload to apply translations everywhere
     window.location.reload();
   };
 
