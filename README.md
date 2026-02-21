@@ -1,36 +1,153 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 👑 OpenBooking
 
-## Getting Started
+> **Autonomous Trust Economy Platform**
 
-First, run the development server:
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js)](https://nextjs.org)
+[![React](https://img.shields.io/badge/React-19-61dafb?logo=react)](https://react.dev)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6?logo=typescript)](https://www.typescriptlang.org)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-4-38bdf8?logo=tailwindcss)](https://tailwindcss.com)
+[![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?logo=supabase)](https://supabase.com)
+
+---
+
+## 🎯 Vision
+
+OpenBooking = **Trust Economy Protocol** + **AI Growth Company** + **Web3 Finance Infrastructure** + **Reputation Network** + **Global Travel OS**
+
+## ✨ Key Features
+
+| Feature | Description |
+|---------|-------------|
+| 🏦 **Escrow Protocol** | Secure payments with state machine protection |
+| 💎 **DeFi Vault** | Earn yield on idle funds via Aave |
+| 🌍 **Multi-Currency** | Crypto (USDT, ETH) + Fiat (SBP, SEPA, Mir) |
+| 🤖 **AI System** | Auto-generate content, SEO, pricing |
+| 📊 **Real-time** | Live metrics via WebSocket |
+| 🧾 **Legal Engine** | Multi-language document CMS |
+| 🌐 **i18n** | 9 languages supported |
+| 🔐 **RBAC** | Client, Host, Admin roles |
+
+## 🚀 Quick Start
 
 ```bash
+# Clone repository
+git clone https://github.com/zametkikostik/OpenBooking.git
+cd OpenBooking
+
+# Install dependencies
+npm install
+
+# Start local Supabase
+supabase start
+
+# Run development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 📁 Project Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+OpenBooking/
+├── src/
+│   ├── app/              # Next.js App Router
+│   ├── components/       # React Components
+│   ├── hooks/           # Custom Hooks
+│   ├── i18n/            # Internationalization
+│   ├── lib/             # Utilities
+│   ├── services/        # Business Logic
+│   └── types/           # TypeScript Types
+├── supabase/            # Database Schema
+└── .github/            # GitHub Templates
+```
 
-## Learn More
+## 🗄️ Database Tables
 
-To learn more about Next.js, take a look at the following resources:
+- `profiles` — Users with RBAC
+- `properties` — Listings
+- `bookings` — Escrow state machine
+- `payment_transactions` — Ledger
+- `safe_vaults` — DeFi yield
+- `reviews` — Ratings
+- `legal_documents` — CMS
+- `analytics_events` — GDPR-compliant tracking
+- `notifications` — Real-time alerts
+- `platform_metrics` — Live stats
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🛠️ Tech Stack
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+**Frontend**
+- Next.js 16 (App Router)
+- React 19
+- TypeScript 5
+- Tailwind CSS 4
+- Framer Motion
+- next-intl
 
-## Deploy on Vercel
+**Backend**
+- Supabase (PostgreSQL + Auth)
+- Row Level Security (RLS)
+- Realtime subscriptions
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+**Web3**
+- Viem
+- Smart Contracts (Escrow)
+- ERC20 Tokens
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+**Services**
+- AI Content Generation
+- DeFi (Aave)
+- Payment Adapter
+- Legal Engine
+
+## 🌐 Supported Languages
+
+🇺🇸 English · 🇷🇺 Русский · 🇧🇬 Български · 🇺🇦 Українська · 🇩🇪 Deutsch · 🇫🇷 Français · 🇪🇸 Español · 🇵🇱 Polski · 🇹🇷 Türkçe
+
+## 📈 Roadmap
+
+- [x] Core Platform
+- [x] Escrow System
+- [x] Multi-language
+- [x] Legal Engine
+- [ ] Mobile Apps
+- [ ] NFT Marketplace
+- [ ] DAO Governance
+
+## 🤝 Contributing
+
+We welcome contributions! See our [Contributing Guide](CONTRIBUTING.md) for details.
+
+### Quick Start for Contributors
+
+```bash
+# Fork repository
+# Clone your fork
+git clone https://github.com/YOUR_USERNAME/OpenBooking.git
+
+# Create feature branch
+git checkout -b feature/amazing-feature
+
+# Make changes and commit
+git commit -m "feat: add amazing feature"
+
+# Push and create PR
+git push origin feature/amazing-feature
+```
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 📞 Contact
+
+- **GitHub**: https://github.com/zametkikostik/OpenBooking
+- **Email**: team@openbooking.io
+
+---
+
+<p align="center">
+  <strong>Built with ❤️ for the decentralized future of travel</strong>
+</p>
