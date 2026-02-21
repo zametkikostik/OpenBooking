@@ -1,19 +1,37 @@
 import { RealTimeMetrics } from '@/components/shared/RealTimeMetrics';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import Link from 'next/link';
 
 export default function HomePage() {
   return (
     <main className="min-h-screen bg-gradient-to-b from-background to-muted">
       {/* Hero Section */}
       <section className="container mx-auto px-4 py-20">
-        <div className="space-y-6 text-center">
+        <div className="space-y-8 text-center">
           <h1 className="text-4xl font-bold tracking-tight md:text-6xl">
             Откройте новую эру бронирования
           </h1>
           <p className="mx-auto max-w-2xl text-xl text-muted-foreground">
             Децентрализованная платформа для аренды недвижимости с защитой средств через Escrow
           </p>
+
+          {/* AUTH BUTTONS - PROMINENT SECTION */}
+          <div className="flex flex-col items-center gap-4">
+            <p className="text-sm text-muted-foreground">Присоединяйтесь к платформе</p>
+            <div className="flex flex-wrap justify-center gap-4">
+              <Button size="lg" asChild className="min-w-[200px] text-lg bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg">
+                <Link href="/auth/login">
+                  🔐 Войти в аккаунт
+                </Link>
+              </Button>
+              <Button size="lg" asChild variant="outline" className="min-w-[200px] text-lg border-2">
+                <Link href="/auth/signup">
+                  📝 Создать аккаунт
+                </Link>
+              </Button>
+            </div>
+          </div>
 
           {/* Search Box */}
           <div className="mx-auto mt-8 max-w-3xl rounded-lg bg-card p-4 shadow-lg">
