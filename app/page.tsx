@@ -1,6 +1,7 @@
 import { RealTimeMetrics } from '@/components/shared/RealTimeMetrics';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import Link from 'next/link';
 
 export default function HomePage() {
   return (
@@ -14,6 +15,20 @@ export default function HomePage() {
           <p className="mx-auto max-w-2xl text-xl text-muted-foreground">
             Децентрализованная платформа для аренды недвижимости с защитой средств через Escrow
           </p>
+
+          {/* Auth Buttons - Prominent */}
+          <div className="mt-6 flex justify-center gap-4">
+            <Button size="lg" asChild className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+              <Link href="/auth/login">
+                🔐 Вход
+              </Link>
+            </Button>
+            <Button size="lg" asChild variant="outline" className="border-2">
+              <Link href="/auth/signup">
+                📝 Регистрация
+              </Link>
+            </Button>
+          </div>
 
           {/* Search Box */}
           <div className="mx-auto mt-8 max-w-3xl rounded-lg bg-card p-4 shadow-lg">
