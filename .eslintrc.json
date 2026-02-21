@@ -1,12 +1,17 @@
 {
-  "extends": [
-    "next/core-web-vitals",
-    "next/typescript"
-  ],
+  "extends": "next/core-web-vitals",
+  "parser": "@typescript-eslint/parser",
+  "plugins": ["@typescript-eslint", "prettier"],
   "rules": {
-    "@typescript-eslint/no-unused-vars": "warn",
+    "prettier/prettier": "error",
+    "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
     "@typescript-eslint/no-explicit-any": "warn",
-    "react/no-unescaped-entities": "off",
-    "@next/next/no-img-element": "warn"
+    "no-console": ["warn", { "allow": ["warn", "error"] }],
+    "react/no-unescaped-entities": "off"
+  },
+  "settings": {
+    "react": {
+      "version": "detect"
+    }
   }
 }

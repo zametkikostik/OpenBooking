@@ -1,49 +1,25 @@
-# ============================================
-# OPENBOOKING DOCKERFILE
-# Multi-stage build for production
-# ============================================
-
-# ============================================
-# BASE IMAGE
-# ============================================
-FROM node:20-alpine AS base
-
-# Install dependencies only when needed
-FROM base AS deps
-RUN apk add --no-cache libc6-compat
+# Build stage
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
 # Copy package files
-COPY package.json package-lock.json* ./
+COPY package*.json ./
 
 # Install dependencies
 RUN npm ci
 
-# ============================================
-# BUILDER
-# ============================================
-FROM base AS builder
-
-WORKDIR /app
-
-# Copy dependencies from deps stage
-COPY --from=deps /app/node_modules ./node_modules
+# Copy source code
 COPY . .
 
-# Generate Prisma types (if using Prisma)
-# RUN npx prisma generate
+# Generate Supabase types (optional)
+# RUN npm run db:generate
 
 # Build Next.js
-ENV NEXT_TELEMETRY_DISABLED=1
-ENV NODE_ENV=production
-
 RUN npm run build
 
-# ============================================
-# RUNNER
-# ============================================
-FROM base AS runner
+# Production stage
+FROM node:20-alpine AS runner
 
 WORKDIR /app
 
@@ -54,12 +30,12 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-# Copy necessary files
+# Copy built application
 COPY --from=builder /app/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
 
-# Set correct permissions
+# Set ownership
 RUN chown -R nextjs:nodejs /app
 
 USER nextjs

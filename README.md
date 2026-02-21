@@ -1,259 +1,350 @@
-# 👑 OpenBooking — Trust Economy Protocol
+# OpenBooking
 
-> Global decentralized booking infrastructure combining Finance + AI Growth + Travel Economy + Reputation Protocol
+**Enterprise Trust Economy Platform for Global Booking Infrastructure**
 
-[![CI/CD](https://github.com/zametkikostik/OpenBooking/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/zametkikostik/OpenBooking/actions/workflows/ci-cd.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)](https://www.typescriptlang.org/)
-[![Next.js](https://img.shields.io/badge/Next.js-15-black?logo=next.js)](https://nextjs.org/)
+[![Next.js](https://img.shields.io/badge/Next.js-14-black?logo=next.js)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?logo=typescript)](https://www.typescriptlang.org/)
+[![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?logo=supabase)](https://supabase.com/)
+
+## 🌟 Overview
+
+OpenBooking — децентрализованная платформа бронирования нового поколения, объединяющая:
+
+- **Trust Economy Protocol** — защита средств через Escrow
+- **Web3 Finance Infrastructure** — интеграция с Ethereum, DAI, A7A5
+- **DeFi Vault** — доходность через Aave и другие протоколы
+- **AI-Powered Growth** — умное ценообразование и SEO
+- **Multi-Language Support** — 9 языков (RU, EN, BG, UA, DE, FR, ES, PL, TR)
 
 ## 🏗 Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                     OPENBOOKING PLATFORM                         │
-├─────────────────────────────────────────────────────────────────┤
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐             │
-│  │   Web App   │  │  Mobile App │  │   API/GraphQL│             │
-│  │  (Next.js)  │  │  (React Nat.)│  │   (Edge Fn) │             │
-│  └──────┬──────┘  └──────┬──────┘  └──────┬──────┘             │
-│         │                │                │                     │
-│         └────────────────┴────────────────┘                     │
-│                          │                                      │
-│              ┌───────────▼───────────┐                         │
-│              │   Supabase (Postgres) │                         │
-│              │   + Auth + Storage    │                         │
-│              └───────────┬───────────┘                         │
-│                          │                                      │
-│         ┌────────────────┼────────────────┐                    │
-│         │                │                │                    │
-│  ┌──────▼──────┐  ┌──────▼──────┐  ┌──────▼──────┐            │
-│  │   Web3      │  │    AI       │  │   Payment   │            │
-│  │  (Ethers)   │  │  Services   │  │   Adapter   │            │
-│  └─────────────┘  └─────────────┘  └─────────────┘            │
+│                        Client Layer                              │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────────┐  │
+│  │   Next.js   │  │  Wagmi/viem │  │   Tailwind + Radix UI   │  │
+│  │   App Router│  │  Web3 Hooks │  │   Components Library    │  │
+│  └─────────────┘  └─────────────┘  └─────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                        API Layer                                 │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────────┐  │
+│  │   REST API  │  │  Webhooks   │  │   Real-time WebSocket   │  │
+│  │   (Routes)  │  │  (Payments) │  │   (Supabase Realtime)   │  │
+│  └─────────────┘  └─────────────┘  └─────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                      Services Layer                              │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────────┐  │
+│  │   Escrow    │  │   Payment   │  │      Compliance         │  │
+│  │   Service   │  │   Adapter   │  │      Engine             │  │
+│  └─────────────┘  └─────────────┘  └─────────────────────────┘  │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────────┐  │
+│  │    Vault    │  │     AI      │  │      Analytics          │  │
+│  │   Manager   │  │   Content   │  │      Tracker            │  │
+│  └─────────────┘  └─────────────┘  └─────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                      Data Layer                                  │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────────┐  │
+│  │  Supabase   │  │  Blockchain │  │      External           │  │
+│  │  PostgreSQL │  │    RPC      │  │      APIs (Aave, etc.)  │  │
+│  └─────────────┘  └─────────────┘  └─────────────────────────┘  │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-## ✨ Features
+## 🚀 Features
 
-### 🔒 Escrow Financial Protocol
-- **State Machine**: `pending` → `payment_locked` → `confirmed` → `checked_in` → `completed` → `settled`
-- **Protection**: After check-in, hosts cannot cancel, admins cannot withdraw
-- **Blockchain**: Smart contract logs all events on-chain
+### Core Functionality
 
-### 💰 Multi-Currency Payments
-| Crypto | Fiat (Russia) | Fiat (EU) | Bulgaria |
-|--------|--------------|-----------|----------|
-| USDT | SBP | SEPA | Borica |
-| USDC | Mir | Adyen | ePay.bg |
-| ETH | YooKassa | Klarna | — |
-| OBT Token | — | — | — |
+- ✅ **Escrow Payment Protection** — средства блокируются до момента заселения
+- ✅ **Multi-Currency Support** — ETH, DAI, A7A5 + фиат (СБП, SEPA, карты)
+- ✅ **DeFi Vault Integration** — доходность через Aave, Compound, Yearn
+- ✅ **Booking State Machine** — PENDING → PAYMENT_LOCKED → CHECKED_IN → COMPLETED → SETTLED
+- ✅ **RBAC System** — Client, Host, Admin роли с разграничением прав
 
-### 🤖 AI Autonomous System
-- **Marketing AI**: Auto-generates ads, SEO pages, travel guides
-- **Growth AI**: Optimizes CAC, LTV, funnel conversion
-- **SEO AI**: Creates city/district pages with Schema.org markup
-- **Dynamic Pricing**: AI-powered price optimization
+### Technical Features
 
-### 🏦 DeFi Safe Vault Economy
-- **Yield Generation**: Integrate with Aave
-- **APY Tracking**: Real-time yield monitoring
-- **Risk Scores**: Built-in risk assessment
+- ✅ **TypeScript** — полная типизация
+- ✅ **Zod Validation** — runtime валидация данных
+- ✅ **Supabase Auth** — аутентификация и авторизация
+- ✅ **Real-time Updates** — WebSocket подписки
+- ✅ **i18n** — 9 языков с middleware routing
+- ✅ **SEO Optimized** — Schema.org, OpenGraph, hreflang
 
-### 🌍 Internationalization
-- **9 Languages**: EN, RU, BG, UA, DE, FR, ES, PL, TR
-- **Local Payment Methods**: Region-specific gateways
-- **Multi-Currency**: USD, EUR, RUB, BGN, etc.
+### Security
 
-## 🚀 Quick Start
+- ✅ **Row Level Security (RLS)** — защита на уровне БД
+- ✅ **AML Validation** — проверка транзакций
+- ✅ **Compliance Logging** — аудит всех действий
+- ✅ **Rate Limiting** — защита от злоупотреблений
+- ✅ **Security Headers** — HSTS, CSP, XSS protection
+
+## 📦 Tech Stack
+
+| Layer | Technology |
+|-------|------------|
+| **Frontend** | Next.js 14, React 18, TypeScript |
+| **Styling** | Tailwind CSS, Radix UI, shadcn/ui |
+| **State** | Zustand, TanStack Query |
+| **Web3** | Wagmi, viem, ethers.js |
+| **Backend** | Supabase (PostgreSQL, Auth, Storage, Realtime) |
+| **Database** | PostgreSQL 15 |
+| **Blockchain** | Ethereum Mainnet, Polygon, Arbitrum |
+| **DeFi** | Aave Protocol |
+| **Payments** | Crypto (ETH/DAI/A7A5) + Fiat (SBP/SEPA/Cards) |
+| **DevOps** | Docker, Kubernetes, GitHub Actions |
+| **Monitoring** | Sentry, Google Analytics |
+
+## 🛠 Development
 
 ### Prerequisites
-- Node.js 20+
-- npm or yarn
-- Supabase CLI
-- Docker (optional)
 
-### 1. Clone Repository
+- Node.js >= 20.0.0
+- npm >= 10.0.0
+- Supabase CLI
+
+### Installation
+
 ```bash
+# Clone repository
 git clone https://github.com/zametkikostik/OpenBooking.git
 cd OpenBooking
-```
 
-### 2. Install Dependencies
-```bash
+# Install dependencies
 npm install
-```
 
-### 3. Setup Environment
-```bash
+# Setup environment
 cp .env.local.example .env.local
 # Edit .env.local with your credentials
-```
 
-### 4. Start Local Supabase
-```bash
-npx supabase start
-```
+# Initialize Supabase locally
+supabase init
+supabase start
 
-### 5. Run Migrations
-```bash
-npx supabase migration up
-```
+# Run database migrations
+supabase migration up
 
-### 6. Seed Database (Optional)
-```bash
-npm run db:seed
-```
-
-### 7. Start Development Server
-```bash
+# Start development server
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000)
+### Environment Variables
+
+```env
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL=http://localhost:54321
+NEXT_PUBLIC_SUPABASE_ANON_KEY=local-anon-key
+SUPABASE_SERVICE_ROLE_KEY=local-service-role
+
+# Supabase Production
+NEXT_PUBLIC_SUPABASE_PROD_URL=https://sibgxcagyylbqmjaykys.supabase.co
+NEXT_PUBLIC_SUPABASE_PROD_ANON_KEY=
+
+# Ethereum RPC
+ETH_RPC_URL=https://eth.llamarpc.com
+ETH_CHAIN_ID=1
+
+# Token Addresses
+A7A5_TOKEN_ADDRESS=0x6fA0BE17e4beA2fCfA22ef89BF8ac9aab0AB0fc9
+DAI_TOKEN_ADDRESS=0x6B175474E89094C44Da98b954EedeAC495271d0F
+
+# App Configuration
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+```
+
+### Available Scripts
+
+```bash
+npm run dev          # Start development server
+npm run build        # Build for production
+npm run start        # Start production server
+npm run lint         # Run ESLint
+npm run lint:fix     # Fix ESLint errors
+npm run type-check   # TypeScript type checking
+npm run test         # Run tests
+npm run test:e2e     # Run E2E tests
+npm run db:generate  # Generate Supabase types
+npm run db:migrate   # Run database migrations
+```
 
 ## 📁 Project Structure
 
 ```
 OpenBooking/
-├── src/
-│   ├── app/              # Next.js App Router
-│   ├── components/       # React Components
-│   ├── lib/              # Core Libraries
-│   │   ├── supabase/     # Supabase client
-│   │   ├── web3/         # Web3 integration
-│   │   ├── payments/     # Payment adapters
-│   │   ├── ai/           # AI services
-│   │   ├── legal/        # Legal engine
-│   │   ├── i18n/         # Internationalization
-│   │   └── monitoring/   # Real-time metrics
-│   ├── types/            # TypeScript types
-│   └── hooks/            # React hooks
-├── supabase/
-│   ├── migrations/       # Database migrations
-│   ├── functions/        # Edge functions
-│   └── templates/        # Email templates
-├── scripts/              # Utility scripts
-├── k8s/                  # Kubernetes configs
-├── .github/
-│   └── workflows/        # CI/CD pipelines
-└── docker-compose.yml    # Docker setup
+├── app/                          # Next.js App Router
+│   ├── [lang]/                   # Localized routes
+│   ├── api/                      # API routes
+│   ├── vault/                    # Vault page
+│   ├── properties/               # Properties pages
+│   └── auth/                     # Authentication pages
+├── components/                   # React components
+│   ├── ui/                       # Base UI components
+│   ├── layout/                   # Layout components
+│   ├── booking/                  # Booking components
+│   ├── property/                 # Property components
+│   ├── payment/                  # Payment components
+│   ├── vault/                    # Vault components
+│   └── shared/                   # Shared components
+├── lib/                          # Core libraries
+│   ├── supabase/                 # Supabase client
+│   ├── web3/                     # Web3 utilities
+│   ├── services/                 # Business logic
+│   ├── hooks/                    # React hooks
+│   ├── validators/               # Zod schemas
+│   └── utils/                    # Utilities
+├── config/                       # Configuration files
+├── types/                        # TypeScript types
+├── public/                       # Static assets
+│   └── locales/                  # i18n translations
+├── styles/                       # Global styles
+├── supabase/                     # Supabase config
+│   ├── migrations/               # Database migrations
+│   └── functions/                # Edge functions
+└── scripts/                      # Utility scripts
 ```
 
 ## 🗄 Database Schema
 
 ### Core Tables
-- **profiles**: User profiles with RBAC
-- **host_profiles**: Host-specific data
-- **properties**: Property listings
-- **bookings**: Booking state machine
-- **payments**: Payment records
-- **safe_vaults**: DeFi positions
-- **reviews**: Review system
-- **ai_content**: AI-generated content
-- **seo_pages**: SEO-optimized pages
-- **legal_documents**: Versioned legal docs
 
-### Key Features
-- Row Level Security (RLS)
-- Real-time subscriptions
-- Automatic triggers
-- Full-text search
+| Table | Description |
+|-------|-------------|
+| `profiles` | User profiles with roles |
+| `properties` | Property listings |
+| `bookings` | Booking records |
+| `escrow_ledger` | Escrow transaction log |
+| `payment_transactions` | Payment history |
+| `reviews` | User reviews |
+| `ai_generated_content` | AI-generated SEO content |
+| `traffic_events` | Analytics events |
+| `compliance_logs` | Compliance audit log |
+| `vault_positions` | DeFi vault positions |
+| `vault_pools` | DeFi vault pools |
+| `real_time_metrics` | Dashboard metrics |
 
 ## 🔐 Security
 
-### Authentication
-- Supabase Auth (Email, OAuth, Wallet)
-- JWT tokens
-- Session management
+### Escrow State Machine
 
-### Authorization
-- RBAC (Client, Host, Admin, Super Admin)
-- Row Level Security policies
-- API rate limiting
+```
+PENDING ──→ PAYMENT_LOCKED ──→ CHECKED_IN ──→ COMPLETED ──→ SETTLED
+    │              │
+    └──→ CANCELLED ←┘
+```
 
-### Data Protection
-- Encryption at rest (AES-256)
-- Encryption in transit (TLS 1.3)
-- GDPR compliance
-- Cookie consent
+**Rules:**
+- После `CHECKED_IN`: Host не может отменить
+- После `CHECKED_IN`: Admin не может вывести средства
+- Все транзакции логируются в `escrow_ledger`
+- Проверка через blockchain RPC
+
+### Payment Flow
+
+1. **Client** создаёт бронирование → `PENDING`
+2. **Client** оплачивает → `PAYMENT_LOCKED` (Escrow)
+3. **Host** подтверждает заселение → `CHECKED_IN`
+4. **Booking** завершается → `COMPLETED`
+5. **Средства** переводятся Host → `SETTLED`
+
+## 🌍 Supported Languages
+
+- 🇷🇺 Russian (RU)
+- 🇬🇧 English (EN)
+- 🇧🇬 Bulgarian (BG)
+- 🇺🇦 Ukrainian (UA)
+- 🇩🇪 German (DE)
+- 🇫🇷 French (FR)
+- 🇪🇸 Spanish (ES)
+- 🇵🇱 Polish (PL)
+- 🇹🇷 Turkish (TR)
+
+## 💰 Supported Payment Methods
+
+### Cryptocurrency
+- Ethereum (ETH)
+- DAI Stablecoin
+- A7A5 Token (`0x6fA0BE17e4beA2fCfA22ef89BF8ac9aab0AB0fc9`)
+
+### Fiat (by Region)
+- **Russia**: SBP, Mir, YooKassa
+- **EU**: SEPA, Adyen, Klarna
+- **Bulgaria**: Borica, ePay.bg
 
 ## 📊 Monitoring
 
 ### Real-time Metrics
+
 - Active bookings
 - Online users
 - Total Value Locked (TVL)
-- Revenue tracking
+- Revenue
+- Total properties
+- Total users
 
-### Stack
-- Prometheus (metrics)
-- Grafana (dashboards)
-- Loki (logs)
-- Redis (caching)
+### Compliance
 
-## 🚢 Deployment
+- AML validation
+- Transaction monitoring
+- Risk scoring
+- Audit logging
 
-### Local Development
-```bash
-docker-compose up
-```
+## 🚀 Deployment
 
-### Production (Kubernetes)
-```bash
-kubectl apply -f k8s/deployment.yaml
-```
-
-### CI/CD
-- GitHub Actions
-- Automated testing
-- Security scanning
-- Auto-deployment
-
-## 🧪 Testing
+### Production Migration
 
 ```bash
-# Unit tests
-npm test
+# Login to Supabase
+supabase login
 
-# Integration tests
-npm run test:integration
+# Link to production project
+supabase link --project-ref sibgxcagyylbqmjaykys
 
-# E2E tests
-npm run test:e2e
+# Push database migrations
+supabase db push
+
+# Deploy edge functions
+supabase functions deploy
+
+# Build Next.js
+npm run build
+
+# Start production server
+npm run start
 ```
 
-## 📖 API Documentation
+### Docker
 
-### REST Endpoints
-- `GET /api/properties` - List properties
-- `POST /api/bookings` - Create booking
-- `GET /api/bookings/:id` - Get booking details
-- `POST /api/payments` - Process payment
+```bash
+# Build image
+docker build -t openbooking .
 
-### GraphQL (Coming Soon)
-- Queries for data fetching
-- Mutations for state changes
-- Subscriptions for real-time updates
+# Run container
+docker run -p 3000:3000 --env-file .env.local openbooking
+```
 
-## 🤝 Contributing
+## 📝 License
 
-1. Fork the repository
-2. Create feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit changes (`git commit -m 'Add amazing feature'`)
-4. Push to branch (`git push origin feature/amazing-feature`)
-5. Open Pull Request
+MIT License — see [LICENSE](LICENSE) for details.
 
-## 📄 License
+## 👥 Team
 
-MIT License - see [LICENSE](LICENSE) for details.
+- **Principal Architect**: OpenBooking Team
+- **Repository**: [github.com/zametkikostik/OpenBooking](https://github.com/zametkikostik/OpenBooking)
 
-## 🌟 Vision
+## 📞 Support
 
-OpenBooking = **Trust Economy Protocol** + **AI Growth Company** + **Web3 Finance Infrastructure** + **Reputation Network** + **Global Travel OS**
+- **Documentation**: [docs.openbooking.com](https://docs.openbooking.com)
+- **Discord**: [discord.gg/openbooking](https://discord.gg/openbooking)
+- **Email**: support@openbooking.com
 
 ---
 
-<p align="center">
-  <strong>Built with ❤️ by OpenBooking Team</strong>
-</p>
+**OpenBooking** — Building the Future of Trust Economy

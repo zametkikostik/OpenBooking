@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: openbooking-config
+  namespace: production
+data:
+  NODE_ENV: "production"
+  NEXT_TELEMETRY_DISABLED: "1"
+  PORT: "3000"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: openbooking-secrets
+  namespace: production
+type: Opaque
+stringData:
+  # Supabase
+  supabase-url: "https://sibgxcagyylbqmjaykys.supabase.co"
+  supabase-anon-key: ""  # Set via external secrets manager
+  supabase-service-key: ""  # Set via external secrets manager
+  
+  # Ethereum
+  eth-rpc-url: "https://eth.llamarpc.com"
+  
+  # Tokens
+  a7a5-token-address: "0x6fA0BE17e4beA2fCfA22ef89BF8ac9aab0AB0fc9"
+  dai-token-address: "0x6B175474E89094C44Da98b954EedeAC495271d0F"
+  
+  # Feature Flags
+  feature-crypto-payments: "true"
+  feature-fiat-payments: "true"
+  feature-vault: "true"
+  feature-ai-content: "true"
+  
+  # Rate Limiting
+  rate-limit-max-requests: "100"
+  rate-limit-window-ms: "60000"
