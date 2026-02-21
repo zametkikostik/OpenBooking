@@ -12,15 +12,3 @@ export const supportedLanguages = [
 
 export type LanguageCode = (typeof supportedLanguages)[number]['code']
 export const defaultLanguage: LanguageCode = 'en'
-
-export const languageNames: Record<LanguageCode, string> = {
-  en: 'English',
-  ru: 'Русский',
-  bg: 'Български',
-  ua: 'Українська',
-  de: 'Deutsch',
-  fr: 'Français',
-  es: 'Español',
-  pl: 'Polski',
-  tr: 'Türkçe',
-}

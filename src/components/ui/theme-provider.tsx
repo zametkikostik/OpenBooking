@@ -1,106 +1,48 @@
 'use client'
 
-import * as React from "react"
-import { Moon, Sun, Monitor } from "lucide-react"
+import * as React from 'react'
+import { Moon, Sun } from 'lucide-react'
+import { Button } from './button'
 
-type Theme = "light" | "dark" | "system"
+type Theme = 'light' | 'dark' | 'system'
 
-interface ThemeProviderProps {
-  children: React.ReactNode
-  attribute?: string
-  defaultTheme?: Theme
-  enableSystem?: boolean
-  disableTransitionOnChange?: boolean
-}
-
-const ThemeContext = React.createContext<{
-  theme: Theme
-  setTheme: (theme: Theme) => void
-  resolvedTheme: Theme
-}>({
-  theme: "system",
-  setTheme: () => null,
-  resolvedTheme: "system",
-})
-
-export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
-  const [theme, setTheme] = React.useState<Theme>("system")
-  const [resolvedTheme, setResolvedTheme] = React.useState<Theme>("system")
+export function ThemeProvider({ children, defaultTheme = 'system' }: { children: React.ReactNode, defaultTheme?: Theme }) {
+  const [theme, setTheme] = React.useState<Theme>(defaultTheme)
 
   React.useEffect(() => {
     const root = document.documentElement
-    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)")
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
 
     const applyTheme = (newTheme: Theme) => {
-      root.classList.remove("light", "dark")
-      
-      const effectiveTheme = newTheme === "system"
-        ? (mediaQuery.matches ? "dark" : "light")
-        : newTheme
-      
+      root.classList.remove('light', 'dark')
+      const effectiveTheme = newTheme === 'system' ? (mediaQuery.matches ? 'dark' : 'light') : newTheme
       root.classList.add(effectiveTheme)
-      setResolvedTheme(effectiveTheme)
     }
 
     applyTheme(theme)
-
-    const handleChange = () => {
-      if (theme === "system") {
-        applyTheme("system")
-      }
-    }
-
-    mediaQuery.addEventListener("change", handleChange)
-    return () => mediaQuery.removeEventListener("change", handleChange)
+    const handleChange = () => { if (theme === 'system') applyTheme('system') }
+    mediaQuery.addEventListener('change', handleChange)
+    return () => mediaQuery.removeEventListener('change', handleChange)
   }, [theme])
 
   return (
-    <ThemeContext.Provider value={{ theme, setTheme, resolvedTheme }}>
+    <div className="theme-provider" data-theme={theme}>
       {children}
-    </ThemeContext.Provider>
+    </div>
   )
 }
 
-export function useTheme() {
-  const context = React.useContext(ThemeContext)
-  if (!context) {
-    throw new Error("useTheme must be used within a ThemeProvider")
-  }
-  return context
-}
-
 export function ThemeToggle() {
-  const { theme, setTheme, resolvedTheme } = useTheme()
+  const [theme, setTheme] = React.useState<Theme>('system')
 
   return (
     <div className="flex items-center gap-2">
-      <button
-        onClick={() => setTheme("light")}
-        className={`p-2 rounded-lg transition-colors ${
-          theme === "light" ? "bg-primary text-primary-foreground" : "hover:bg-muted"
-        }`}
-        aria-label="Light theme"
-      >
+      <Button variant="ghost" size="sm" onClick={() => setTheme('light')}>
         <Sun className="h-4 w-4" />
-      </button>
-      <button
-        onClick={() => setTheme("dark")}
-        className={`p-2 rounded-lg transition-colors ${
-          theme === "dark" ? "bg-primary text-primary-foreground" : "hover:bg-muted"
-        }`}
-        aria-label="Dark theme"
-      >
+      </Button>
+      <Button variant="ghost" size="sm" onClick={() => setTheme('dark')}>
         <Moon className="h-4 w-4" />
-      </button>
-      <button
-        onClick={() => setTheme("system")}
-        className={`p-2 rounded-lg transition-colors ${
-          theme === "system" ? "bg-primary text-primary-foreground" : "hover:bg-muted"
-        }`}
-        aria-label="System theme"
-      >
-        <Monitor className="h-4 w-4" />
-      </button>
+      </Button>
     </div>
   )
 }
