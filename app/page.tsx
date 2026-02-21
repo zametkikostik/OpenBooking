@@ -55,17 +55,19 @@ export default function HomePage() {
               <Input type="date" className="flex-1" />
               <Input type="date" className="flex-1" />
               <Input type="number" placeholder="Гости" min="1" className="w-full md:w-32" />
-              <Button size="lg">Найти</Button>
+              <Button size="lg" asChild>
+                <Link href="/properties">Найти</Link>
+              </Button>
             </div>
           </div>
 
           {/* CTA Buttons */}
           <div className="mt-8 flex justify-center gap-4">
             <Button size="lg" asChild>
-              <a href="/properties">Начать путешествие</a>
+              <Link href="/properties">Начать путешествие</Link>
             </Button>
-            <Button size="lg" variant="outline">
-              Стать хостом
+            <Button size="lg" asChild>
+              <Link href="/auth/signup">Стать хостом</Link>
             </Button>
           </div>
         </div>
